@@ -1,0 +1,58 @@
+import { Logger } from 'winston';
+import { DecodedMessage } from '../hcs/decoded-message.js';
+import { HcsMessenger } from '../hcs/hcs-messenger.js';
+import {
+  MessageType,
+  PresentationQueryMessage,
+  QueryResponseMessage,
+} from '../hcs/messages.js';
+import { CredentialRegistry } from '../vc/credential-registry.js';
+import { Handler } from './handler.js';
+
+/**
+ * Processes presentation query messages, responding with a query-response
+ * message via HCS only if the query could be fulfilled by this responder (based
+ * on known credential ids).
+ */
+export class PresentationQueryHandler implements Handler {
+  constructor(
+    private readonly responderDid: string,
+    private readonly hcsMessenger: HcsMessenger,
+    private readonly registry: CredentialRegistry,
+    protected readonly logger?: Logger
+  ) {}
+
+  readonly operation = MessageType.PRESENTATION_QUERY;
+
+  async handle(message: DecodedMessage) {
+    this.logger?.verbose(`Received "${this.operation}"`);
+
+    const { vc_id, requester_did } =
+      message.contents as PresentationQueryMessage;
+
+    if (!vc_id || !requester_did) {
+      this.logger?.error(
+        `Message "${message.sequenceNumber}" did not contain the required parameters for "${this.operation}"`
+      );
+      return;
+    }
+
+    const canHandle = await this.registry.canHandleCredential(vc_id);
+    if (!canHandle) {
+      this.logger?.info(`Unable to handle credential "${vc_id}" - ignoring`);
+      return;
+    }
+
+    const response: QueryResponseMessage = {
+      operation: MessageType.QUERY_RESPONSE,
+      responder_did: this.responderDid,
+      offer_hbar: 0,
+    };
+
+    this.logger?.verbose(`Sending response "${response.operation}"`);
+    await this.hcsMessenger.send({
+      message: JSON.stringify(response),
+      topicId: message.topicId,
+    });
+  }
+}

@@ -1,0 +1,6 @@
+.env
+node_modules
+
+dist
+# The lmdb key value database
+_data

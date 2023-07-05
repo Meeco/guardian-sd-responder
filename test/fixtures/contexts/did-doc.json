@@ -1,0 +1,22 @@
+{
+  "@context": "https://www.w3.org/ns/did/v1",
+  "id": "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0",
+  "authentication": [
+    "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key"
+  ],
+  "verificationMethod": [
+    {
+      "id": "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0",
+      "publicKeyMultibase": "z6F5P6bQJ2PotZeLnLWSC51ZLSmq9WN1fcaufrAGZtVQ6"
+    },
+    {
+      "id": "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key-bbs",
+      "type": "Bls12381G2Key2020",
+      "controller": "did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0",
+      "publicKeyBase58": "245EGuzAERA8TEYXgMJMVKVkJUenAszoLefjyeGL9riTTLXp4NKR7jWvR6WUGJWnuRLCm9ZGeRb66gJTzrdsVTkHMvngrgHcXgy1N8MBCyHMs9nmntJbtptMgXVqruEscxcb"
+    }
+  ],
+  "assertionMethod": ["#did-root-key", "#did-root-key-bbs"]
+}
