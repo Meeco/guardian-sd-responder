@@ -1,5 +1,5 @@
 import { Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it } from '@jest/globals';
 import { loadEnvironment } from '../../src/util/load-environment.js';
 
 describe('Load environment', () => {
@@ -16,8 +16,14 @@ describe('Load environment', () => {
       '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   };
 
+  let client: Client | undefined;
+  afterEach(() => {
+    client?.close();
+  });
+
   it('parses all variables and returns environment configuration', () => {
     const env = loadEnvironment(exampleEnvironment);
+    client = env.client;
     expect(env).toEqual({
       accountId: '0.0.1',
       accountPrivateKey:

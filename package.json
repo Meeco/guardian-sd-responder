@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node -r dotenv/config --loader @swc-node/register/esm src/index.ts",
     "example": "node -r dotenv/config --loader @swc-node/register/esm src/example/process-test-request.ts",
-    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --config jest.config.js",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --config jest.config.js --forceExit",
     "lint": "eslint src test",
     "format": "prettier -w src test",
     "formatting": "prettier -c src test"
