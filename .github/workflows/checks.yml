@@ -7,7 +7,7 @@ concurrency:
 jobs:
   checks:
     name: 'Code checks'
-    timeout-minutes: 15
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
