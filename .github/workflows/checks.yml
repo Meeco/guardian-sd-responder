@@ -1,6 +1,13 @@
 on: [push]
+
+concurrency:
+  group: ${{ github.ref }}/tests
+  cancel-in-progress: true
+
 jobs:
-  build:
+  checks:
+    name: 'Code checks'
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
