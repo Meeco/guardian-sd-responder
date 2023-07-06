@@ -109,3 +109,52 @@ export const presentationDefinition: PresentationDefinitionV2 = {
     },
   ],
 };
+
+export const presentation = {
+  '@context': [
+    'https://www.w3.org/2018/credentials/v1',
+    'https://identity.foundation/presentation-exchange/submission/v1',
+  ],
+  type: ['VerifiablePresentation', 'PresentationSubmission'],
+  presentation_submission: {
+    id: 'Upa-4PF3w8qXNCM1BPXFA',
+    definition_id: '33bdb7eb-20fe-47dd-bed3-3f6c582d44d1',
+    descriptor_map: [
+      { id: 'audit', format: 'ldp_vc', path: '$.verifiableCredential[0]' },
+    ],
+  },
+  verifiableCredential: [
+    {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://w3id.org/security/suites/bls12381-2020/v1',
+        'https://ipfs.io/ipfs/QmYmAKqchE8J6feEEKwqZeJwSrC6NRQsCHx2dBs8Vs7ECe',
+      ],
+      id: 'urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9',
+      type: 'VerifiableCredential',
+      description: 'iRec Application Details',
+      identifier: 'b5a8ec55-505b-4309-a6a1-6cd2ea270d71',
+      name: 'iRec Application Details',
+      credentialSubject: {
+        id: 'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+        type: '8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0',
+        field3: '255 345 345',
+      },
+      expirationDate: '2029-12-03T12:19:52Z',
+      issuanceDate: '2019-12-03T12:19:52Z',
+      issuer:
+        'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+      proof: {
+        type: 'BbsBlsSignatureProof2020',
+        created: '2023-07-04T04:39:40Z',
+        nonce:
+          'E4hDOoA9ZFOjdbxutHA4dd/i3MLEEmwdtLmY3T8INDUZ3W38nA1imGvq2xOGsctqB9U=',
+        proofPurpose: 'assertionMethod',
+        proofValue:
+          'ACAA/4CAD4D7QSeHWPqqKQpAM8i+L9XtB/ATu8V6x6xwAw/XfUW6HayYQtLkmoS4epmZBmAEKYFFiUCAXWLeiWbYgucMPAy2e33bK4Fr0eXq+Y1utp1LGImziPyddgp6QAU0gTMCraOZ74oeB6qF0CB00ZUHritqe3wt41v44Mwwq0GIkVZd9JRDQjryoHaELjDzibBLcQAAAHSNWHWRsJD4bHIdLEtnUw6/2c9lUHRfSNyTx0CQraBF5f0vQpRuWbZezndwJDhqOpYAAAACbOVKAYrzHhMrwuPt1LBh9VmU/a8ln6ZBVCnY28+OO6QYkvgTtxYHzW4Ph1yQMM9j/T+SDUVDFhyLd9gWdvoW4aEMVwyOqbSOxhoUKdcFciU5TmxWNJ6mguQgLs9rkd64JaHqW15pSgve7lPNms18lQAAABRhwv83idVGlBcyS7IEKvXKWDVJYlCP0iXGOAxk35t/KBwrmBH1Pp7Zj/Zsn0FzhK2JigUSc6w8jGmIB1DrvKR7KNP+qJsw9TM2Q8diDtURsGlCNTvEe+YAdHx9Zzi2k9o4E8tVJfwgUu7RX/FJojDkmgbC73ZRsMdlwH9diw9XawyvlPa75jG00rU9g8ct/U7YGLKuiY/C/2+F28ZMJNbzLia/W7vmScheoHvXa3irpNXjkNuMTA4C0JEHoIsUnZ4v1poT8O2uT7kj1DmglDTpG44DUuVdjNFeekSFC6l/KjIDAw2oRYNSentRH2jhTXFSaf+841QXl0OkhuEA7/euVBwo59OXcME8TXtZHVSWCL8JaKnqteKnyHlG+EMDQqFuZL9nw++dm/yeOhPuMq6lgxvqteW4L9HyxNGvbAsK8T0maYDBEiqEXlvV/e8eGZ11R1vluMKzCedT+3xXCcLMINKri2f0z0brO8k+2Oz1StoHVvXAo8WTOvRDKb/OmAgWyD6q+MkEmKZwliWzloKvAmYotBF/Qmn7tv3BkQTW/A6mHmuAtHfPK4wxcInaFSLSUmwL7ReZoFgy5E9MSGo2RNggKZka3hRk/kTjiy96q6Y2slN9Eq+dlyujlfVmorA1mCO5r+wjhYKxiGsE7vjrimGeJonJXjuZBrZat2c47mk4g13mngwi+H5JJv3au04hfPeAAvG2inApGpnvp63DVyIz1phOPiS4KV/HGgi6HDK0xDdpFOdxWGSmQrvFS4NYG9bvUPfEKPjNHTlb6230saWuRBZe9OfZ5gFWhW7fSQ17CA4qoHd6sKwz4CRqJFToh2fJawRsUuChAq+xwfyN',
+        verificationMethod:
+          'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570#did-root-key-bbs',
+      },
+    },
+  ],
+};

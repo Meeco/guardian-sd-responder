@@ -1,11 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 import { MattrBbsBlsService } from '../../src/vc/bbs-bls-service-mattr.js';
+import { PresentationSigner } from '../../src/vc/presentation-signer.js';
+import { createSpyObject } from '../fixtures/create-spy-object.js';
 import { credential, presentationDefinition } from '../fixtures/data.js';
 import { testLoader } from '../fixtures/test-loader.js';
 
 describe('MattrBbsBlsService', () => {
+  const signer = createSpyObject<PresentationSigner>();
+
   it('derives a proof', async () => {
-    const service = new MattrBbsBlsService(testLoader);
+    const service = new MattrBbsBlsService(testLoader, signer);
 
     const derivedProof = await service.createProof(
       credential,

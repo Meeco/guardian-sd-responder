@@ -6,6 +6,8 @@
   "jest.jestCommandLine": "NODE_OPTIONS=--experimental-vm-modules npx jest",
   "jestrunner.jestCommand": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --config jest.config.js",
   "jestrunner.debugOptions": {
-    "program": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --config jest.config.js"
+    "env": {
+      "NODE_OPTIONS": "--experimental-vm-modules"
+    }
   }
 }

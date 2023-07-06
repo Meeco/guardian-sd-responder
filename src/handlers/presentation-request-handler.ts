@@ -107,13 +107,15 @@ export class PresentationRequestHandler implements Handler {
       presentation_definition
     );
 
-    const presentation = await this.bbsBlsService.preparePresentation(
+    const signedPresentation = await this.bbsBlsService.preparePresentation(
       presentation_definition,
       derivedProof
     );
 
     this.logger?.verbose('Write presentation to HFS');
-    const fileId = await this.writer.writeFile(JSON.stringify(presentation));
+    const fileId = await this.writer.writeFile(
+      JSON.stringify(signedPresentation)
+    );
 
     if (!fileId) {
       this.logger?.error(

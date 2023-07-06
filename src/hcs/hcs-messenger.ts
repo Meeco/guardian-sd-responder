@@ -17,7 +17,7 @@ export class HcsMessenger {
       const getReceipt = await sendResponse.getReceipt(this.client);
       const transactionStatus = getReceipt.status;
       this.logger?.silly(
-        'The message transaction status: ' + transactionStatus.toString()
+        `The message transaction status: "${transactionStatus.toString()}"`
       );
     } catch (error) {
       this.logger?.error(`Message send failed`, error);

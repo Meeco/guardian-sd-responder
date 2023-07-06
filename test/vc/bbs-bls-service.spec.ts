@@ -1,25 +1,42 @@
 import { describe, expect, it } from '@jest/globals';
 import { BaseBbsBlsService } from '../../src/vc/bbs-bls-service.js';
+import { PresentationSigner } from '../../src/vc/presentation-signer.js';
+import { createSpyObject } from '../fixtures/create-spy-object.js';
 import {
   presentationDefinition,
   selectiveCredential,
 } from '../fixtures/data.js';
+import { testLoader } from '../fixtures/test-loader.js';
 
 describe('BaseBbsBlsService', () => {
-  it('turns a derived proof into a presentation', async () => {
-    const service = new BaseBbsBlsService();
+  const signer = createSpyObject<PresentationSigner>();
+
+  it('turns a derived proof into a signed presentation', async () => {
+    const service = new BaseBbsBlsService(testLoader, signer);
+
+    signer.signPresentation.mockImplementation((credential) => ({
+      ...credential,
+      proof: {
+        challenge: 'abcd',
+        proofValue: '1234',
+        type: 'Ed25519Signature2020',
+        verificationMethod: 'did:key:1234',
+      },
+    }));
+
     const presentation = await service.preparePresentation(
       presentationDefinition,
       selectiveCredential
     );
 
     expect(presentation).toEqual({
-      presentation: {
+      verifiablePresentation: {
         '@context': [
           'https://www.w3.org/2018/credentials/v1',
           'https://identity.foundation/presentation-exchange/submission/v1',
         ],
         type: ['VerifiablePresentation', 'PresentationSubmission'],
+        holder: undefined,
         presentation_submission: {
           id: expect.any(String),
           definition_id: '33bdb7eb-20fe-47dd-bed3-3f6c582d44d1',
@@ -32,6 +49,12 @@ describe('BaseBbsBlsService', () => {
           ],
         },
         verifiableCredential: [selectiveCredential],
+        proof: {
+          challenge: 'abcd',
+          proofValue: '1234',
+          type: 'Ed25519Signature2020',
+          verificationMethod: 'did:key:1234',
+        },
       },
       presentationSubmissionLocation: 1,
       presentationSubmission: {
@@ -42,9 +65,8 @@ describe('BaseBbsBlsService', () => {
         ],
       },
     });
-
-    expect(presentation.presentation.presentation_submission!.id).toEqual(
-      presentation.presentationSubmission.id
+    expect(presentation.presentationSubmission.id).toEqual(
+      (presentation.verifiablePresentation as any).presentation_submission.id
     );
   });
 });

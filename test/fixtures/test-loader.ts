@@ -12,13 +12,16 @@ const loaderCache: any = {
 
 // Whitelist of URL's that will be loaded during testing
 const acceptedUrls = [
-  'https://www.w3.org/2018/credentials/v1',
+  'https://identity.foundation/presentation-exchange/submission/v1',
   'https://w3id.org/security/bbs/v1',
+  'https://w3id.org/security/suites/bls12381-2020/v1',
+  'https://w3id.org/security/suites/ed25519-2018/v1',
+  'https://w3id.org/security/suites/ed25519-2020/v1',
+  'https://w3id.org/security/suites/jws-2020/v1',
   'https://w3id.org/security/v1',
   'https://w3id.org/security/v2',
-  'https://w3id.org/security/suites/bls12381-2020/v1',
+  'https://www.w3.org/2018/credentials/v1',
   'https://www.w3.org/ns/did/v1',
-  'https://w3id.org/security/suites/jws-2020/v1',
 ];
 
 export const testLoader = async (documentUrl: string) => {
@@ -43,6 +46,7 @@ export const testLoader = async (documentUrl: string) => {
   } catch (err) {
     console.error(err);
   }
-
-  throw new Error(`Test loader could not load ${documentUrl}`);
+  const message = `Test loader could not load ${documentUrl}`;
+  console.log(message);
+  throw new Error(message);
 };

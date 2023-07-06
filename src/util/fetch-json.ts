@@ -15,10 +15,12 @@ export async function fetchJson<T = any>(url: string) {
         return result.json() as Promise<T>;
       }
 
-      throw new Error(`Could not fetch ${url} - status was "${result.status}"`);
+      throw new Error(
+        `Could not fetch "${url}" - status was "${result.status}"`
+      );
     })
     .catch((err) => {
       log.error(err);
-      throw new Error(`Could not fetch ${url}`);
+      throw new Error(`Could not fetch from "${url}"`);
     });
 }

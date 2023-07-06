@@ -1,13 +1,15 @@
 import { TopicMessageSubmitTransaction } from '@hashgraph/sdk';
 import inquirer from 'inquirer';
 import { MessageType } from '../hcs/messages.js';
-import { loadEnvironment } from '../util/load-environment.js';
+import { createServices, loadEnvironment } from '../util/load-environment.js';
 import { log } from '../util/logger.js';
 
 // Send a request message for the given file id to the first topic listed in the
 // RESPONDER_TOPIC_IDS configuration.
 
-const { client, responderTopicsIds, responderDid } = loadEnvironment();
+const environment = loadEnvironment();
+const { responderTopicsIds, responderDid } = environment;
+const { client } = createServices(environment);
 
 const { requestFileId } = await inquirer.prompt([
   {
