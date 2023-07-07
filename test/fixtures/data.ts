@@ -12,14 +12,14 @@ export const credential: VerifiableCredential = {
   id: credentialId,
   type: ['VerifiableCredential'],
   issuer:
-    'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+    'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
   identifier: 'b5a8ec55-505b-4309-a6a1-6cd2ea270d71',
   name: 'iRec Application Details',
   description: 'iRec Application Details',
   issuanceDate: '2019-12-03T12:19:52Z',
   expirationDate: '2029-12-03T12:19:52Z',
   credentialSubject: {
-    id: 'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+    id: 'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
     type: '8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0',
     field0: 'Example Company',
     field1: '10000',
@@ -43,12 +43,12 @@ export const credential: VerifiableCredential = {
   },
   proof: {
     type: 'BbsBlsSignature2020',
-    created: '2023-07-05T04:29:09Z',
+    created: '2023-07-07T01:21:39Z',
     proofPurpose: 'assertionMethod',
     proofValue:
-      'jM5/dUktstEpxQl/23pqm9a2OUF9nxjCPbDrgo+02C9N1IMYSHItOg+51LHt6DGxYUHlKfzccE4m7waZyoLEkBLFiK2g54Q2i+CdtYBgDdkUDsoULSBMcH1MwGHwdjfXpldFNFrHFx/IAvLVniyeMQ==',
+      'oPHOzlwt31dk6Jlpmu/JhcFy/WDfkqhGmr/QcEzhu7Ipqwus6ADVKgX5KL3T3zq7YUHlKfzccE4m7waZyoLEkBLFiK2g54Q2i+CdtYBgDdkUDsoULSBMcH1MwGHwdjfXpldFNFrHFx/IAvLVniyeMQ==',
     verificationMethod:
-      'did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key-bbs',
+      'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key-bbs',
   },
 };
 
@@ -64,24 +64,24 @@ export const selectiveCredential = {
   identifier: 'b5a8ec55-505b-4309-a6a1-6cd2ea270d71',
   name: 'iRec Application Details',
   credentialSubject: {
-    id: 'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+    id: 'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
     type: '8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0',
     field3: '255 345 345',
   },
   expirationDate: '2029-12-03T12:19:52Z',
   issuanceDate: '2019-12-03T12:19:52Z',
   issuer:
-    'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+    'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
   proof: {
     type: 'BbsBlsSignatureProof2020',
-    created: '2023-07-05T04:29:09Z',
+    created: '2023-07-07T01:21:39Z',
     nonce:
-      'XXBD0eP0qesc8V4RJCKsm0Oh/NSuLDXkXIbhgB6bXrK8hn90EmvOP2pL5T2lVJ8XBjI=',
+      'oeuYH9pfC2xKsIYGscihYQhYHbi2aF5xt+w+kHyVg3FdaJobB89No7V5pwD3bA7Uf3c=',
     proofPurpose: 'assertionMethod',
     proofValue:
-      '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',
+      'ACAA/4CAD4JZkc1du7snAchWdlWMuuIyYJZlxaYxFj7PjhQdPBZKX+2Y+Rhno9VHyf+1ybtHtLSorUiTLgFfA2upgYG0pXkriM4IEcq8mkxAPGCN5WQ9JVpa90VR7yY45cvHKe+tiKVVBuo9YwVUE5/Nr5dE0jodGfdN+GbPPs+hdhc57ozdOtqA6I4i6zuZqe1hkLniiAAAAHSxirQ0ahQbdrrSBOYk7dODNqe+CM3f/BcIJ6MZuhxgtHJPg9aOpgpUp3g8tJt/pSsAAAACDGoUVnBKI4fAJJlB4p1brrIqEyvSuVtzmVWeSNz9eqdVgA5M8x7ppUIqCP+BppLez2gRfq2n52pPQ0K81soMy7cfuLYAkWnpjIVUCletG3nG+6SN7P+Y55//1llerslVdaMa+3dwBmARB27bKPmg5AAAABRYAVVk9+iPzPamY0ewLX39M8XR++uzVP88eI7Kaks7qCISp4ouiwCFvWNVSCQ/oaGPk62I0+G+pFArRdGZrY9xGId+iLmwcZLSr8RCt1tEEqX1iKlo1tjzzJgU9uSCFtgFH9uPaIxFGotu3JuarvGSZWrK2ZQJiJPw3ejWkLxrg1VO911kr+ZsfJjvCpGPe0eWa2DOA1mUTFzYkkM7kGFmTDjdVqtAksUI/RFyH4/neZNeOakoixhjcjk0rwUWL0xr/Wp3AOjMFJyvGCsgJJhbKLsgFkqK0sU+2fnZXArNoU6Cyl2snCG7PHIsB/BHaJGhDviKkSjWa+b/CVMW7g3ADNgDxU/YVti6yABR1BKSbGBmb41AGfU+lFx5TMHwL/w7ZyKhrzySuKnNda1T7/CE7Tw/IQY0F2hb7DKr/WK1tzyzcfFIHrNaAzpnM650eTfwNUwYN+VyQm0ZhXgri2NMLqV6mWycgxWBC1OBt/cdtClLWdWtBmxAhZ7JGNdLJcZLXsHTdfxY2ydcRKqh5mVf4/1lb9DJ8Wr+iXZZvFwhyiyNx/4cFNg1BE60PE95TNBEZsSesTxlbiwCQOrxohYeQqUIYc8e9lXe25uCSkI6+Rr7CV+k2Xx0f5dlDhrUhupY03zf6PB1YZ6iuCf/wUIdE0buV0AgCIDtJkw+cMksGh+nZngZXCl9azogxSIhbieAHctdoaIshxWR+w8qMki+P2wl2BCK2NkPVFd2hZ5ZhPwXYJ2UHZ+Bla3Ce4qjesZfuC7vZGpc49TBPcJdGm1PmgGJ1pT7u/SVrbxBBdhFlAeq7SHgSAZG+3YOJT0uvLhw5jrwSxAIbWZW29t4WMnt',
     verificationMethod:
-      'did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key-bbs',
+      'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key-bbs',
   },
 };
 
@@ -136,24 +136,24 @@ export const presentation = {
       identifier: 'b5a8ec55-505b-4309-a6a1-6cd2ea270d71',
       name: 'iRec Application Details',
       credentialSubject: {
-        id: 'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+        id: 'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
         type: '8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0',
         field3: '255 345 345',
       },
       expirationDate: '2029-12-03T12:19:52Z',
       issuanceDate: '2019-12-03T12:19:52Z',
       issuer:
-        'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570',
+        'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
       proof: {
         type: 'BbsBlsSignatureProof2020',
-        created: '2023-07-04T04:39:40Z',
+        created: '2023-07-07T01:21:39Z',
         nonce:
-          'E4hDOoA9ZFOjdbxutHA4dd/i3MLEEmwdtLmY3T8INDUZ3W38nA1imGvq2xOGsctqB9U=',
+          'oeuYH9pfC2xKsIYGscihYQhYHbi2aF5xt+w+kHyVg3FdaJobB89No7V5pwD3bA7Uf3c=',
         proofPurpose: 'assertionMethod',
         proofValue:
-          'ACAA/4CAD4D7QSeHWPqqKQpAM8i+L9XtB/ATu8V6x6xwAw/XfUW6HayYQtLkmoS4epmZBmAEKYFFiUCAXWLeiWbYgucMPAy2e33bK4Fr0eXq+Y1utp1LGImziPyddgp6QAU0gTMCraOZ74oeB6qF0CB00ZUHritqe3wt41v44Mwwq0GIkVZd9JRDQjryoHaELjDzibBLcQAAAHSNWHWRsJD4bHIdLEtnUw6/2c9lUHRfSNyTx0CQraBF5f0vQpRuWbZezndwJDhqOpYAAAACbOVKAYrzHhMrwuPt1LBh9VmU/a8ln6ZBVCnY28+OO6QYkvgTtxYHzW4Ph1yQMM9j/T+SDUVDFhyLd9gWdvoW4aEMVwyOqbSOxhoUKdcFciU5TmxWNJ6mguQgLs9rkd64JaHqW15pSgve7lPNms18lQAAABRhwv83idVGlBcyS7IEKvXKWDVJYlCP0iXGOAxk35t/KBwrmBH1Pp7Zj/Zsn0FzhK2JigUSc6w8jGmIB1DrvKR7KNP+qJsw9TM2Q8diDtURsGlCNTvEe+YAdHx9Zzi2k9o4E8tVJfwgUu7RX/FJojDkmgbC73ZRsMdlwH9diw9XawyvlPa75jG00rU9g8ct/U7YGLKuiY/C/2+F28ZMJNbzLia/W7vmScheoHvXa3irpNXjkNuMTA4C0JEHoIsUnZ4v1poT8O2uT7kj1DmglDTpG44DUuVdjNFeekSFC6l/KjIDAw2oRYNSentRH2jhTXFSaf+841QXl0OkhuEA7/euVBwo59OXcME8TXtZHVSWCL8JaKnqteKnyHlG+EMDQqFuZL9nw++dm/yeOhPuMq6lgxvqteW4L9HyxNGvbAsK8T0maYDBEiqEXlvV/e8eGZ11R1vluMKzCedT+3xXCcLMINKri2f0z0brO8k+2Oz1StoHVvXAo8WTOvRDKb/OmAgWyD6q+MkEmKZwliWzloKvAmYotBF/Qmn7tv3BkQTW/A6mHmuAtHfPK4wxcInaFSLSUmwL7ReZoFgy5E9MSGo2RNggKZka3hRk/kTjiy96q6Y2slN9Eq+dlyujlfVmorA1mCO5r+wjhYKxiGsE7vjrimGeJonJXjuZBrZat2c47mk4g13mngwi+H5JJv3au04hfPeAAvG2inApGpnvp63DVyIz1phOPiS4KV/HGgi6HDK0xDdpFOdxWGSmQrvFS4NYG9bvUPfEKPjNHTlb6230saWuRBZe9OfZ5gFWhW7fSQ17CA4qoHd6sKwz4CRqJFToh2fJawRsUuChAq+xwfyN',
+          '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',
         verificationMethod:
-          'did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570#did-root-key-bbs',
+          'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key-bbs',
       },
     },
   ],

@@ -4,10 +4,22 @@ import exampleCredentialContext from './contexts/example-credential-context.json
 
 // Pre-cached test items
 const loaderCache: any = {
-  'did:hedera:testnet:5zoGqou2oPg9Rz2opbf8moyNwNeKeP7bYntNCdmjuJ9z_0.0.0#did-root-key-bbs':
+  'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0':
+    didDoc,
+  'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key-bbs':
     didDoc,
   'https://ipfs.io/ipfs/QmYmAKqchE8J6feEEKwqZeJwSrC6NRQsCHx2dBs8Vs7ECe':
     exampleCredentialContext,
+};
+
+export const didKeyData = {
+  id: 'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key',
+  controller:
+    'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0',
+  type: 'Ed25519VerificationKey2018',
+  privateKeyBase58:
+    '3NBjQ17bjR3kz94KU64r4iJ4hH8KA4RRVzKfiN7c8yUA6GMNj1RUtijLUY5phJ4hRhM6dSMKQCCWMyGPX772cjg3',
+  publicKeyBase58: '7pa5nP3omvPiXFCNjcpwzpvGAumhrQtvRQ9WY9UfmfM9',
 };
 
 // Whitelist of URL's that will be loaded during testing
