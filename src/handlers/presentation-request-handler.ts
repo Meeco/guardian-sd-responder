@@ -41,6 +41,7 @@ export class PresentationRequestHandler implements Handler {
 
     const { recipient_did, request_file_id } =
       message.contents as PresentationRequestMessage;
+    const challenge = message.sequenceNumber.toString();
 
     if (recipient_did !== this.responderDid) {
       this.logger?.verbose(
@@ -109,7 +110,8 @@ export class PresentationRequestHandler implements Handler {
 
     const signedPresentation = await this.bbsBlsService.preparePresentation(
       presentation_definition,
-      derivedProof
+      derivedProof,
+      challenge
     );
 
     this.logger?.verbose('Write presentation to HFS');

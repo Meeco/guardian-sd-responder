@@ -131,13 +131,16 @@ describe('PresentationRequestHandler', () => {
 
   it('composes a presentation with derived proof, writes it to hfs and responds with hcs message', async () => {
     const message = DecodedMessage.fromTopicMessage(
-      createTopicMessage({
-        operation: MessageType.PRESENTATION_REQUEST,
-        recipient_did: 'did:key:1234',
-        request_file_id: '0.0.111',
-        request_file_dek_encrypted_base64: '',
-        request_file_public_key_id: '',
-      }),
+      createTopicMessage(
+        {
+          operation: MessageType.PRESENTATION_REQUEST,
+          recipient_did: 'did:key:1234',
+          request_file_id: '0.0.111',
+          request_file_dek_encrypted_base64: '',
+          request_file_public_key_id: '',
+        },
+        501
+      ),
       '0.0.1234'
     )!;
     const presentation = {
@@ -170,7 +173,8 @@ describe('PresentationRequestHandler', () => {
     );
     expect(bbsBls.preparePresentation).toHaveBeenCalledWith(
       presentationDefinition,
-      selectiveCredential
+      selectiveCredential,
+      '501' // sequence no of the message
     );
     expect(writer.writeFile).toHaveBeenCalledWith(JSON.stringify(presentation));
     expect(messenger.send).toHaveBeenCalledWith({

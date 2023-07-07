@@ -58,7 +58,8 @@ export class BaseBbsBlsService {
    */
   async preparePresentation(
     presentationDefinition: PresentationDefinitionV2,
-    derivedProof: any
+    derivedProof: any,
+    challenge: string
   ) {
     const pex = new PEXv2();
 
@@ -78,7 +79,7 @@ export class BaseBbsBlsService {
       presentationDefinition,
       derivedProof,
       ({ presentation }) =>
-        this.presentationSigner.signPresentation(presentation, 'example'),
+        this.presentationSigner.signPresentation(presentation, challenge),
       {}
     );
     this.logger?.debug('Signed presentation result');

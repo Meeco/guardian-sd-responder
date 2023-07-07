@@ -14,10 +14,10 @@ describe('BaseBbsBlsService', () => {
   it('turns a derived proof into a signed presentation', async () => {
     const service = new BaseBbsBlsService(testLoader, signer);
 
-    signer.signPresentation.mockImplementation((credential) => ({
+    signer.signPresentation.mockImplementation((credential, challenge) => ({
       ...credential,
       proof: {
-        challenge: 'abcd',
+        challenge,
         proofValue: '1234',
         type: 'Ed25519Signature2020',
         verificationMethod: 'did:key:1234',
@@ -26,31 +26,41 @@ describe('BaseBbsBlsService', () => {
 
     const presentation = await service.preparePresentation(
       presentationDefinition,
-      selectiveCredential
+      selectiveCredential,
+      '1234.5678'
+    );
+
+    const expectedPresentation = {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://identity.foundation/presentation-exchange/submission/v1',
+      ],
+      type: ['VerifiablePresentation', 'PresentationSubmission'],
+      presentation_submission: {
+        id: expect.any(String),
+        holder: undefined,
+        definition_id: '33bdb7eb-20fe-47dd-bed3-3f6c582d44d1',
+        descriptor_map: [
+          {
+            id: 'audit',
+            format: 'ldp_vc',
+            path: '$.verifiableCredential[0]',
+          },
+        ],
+      },
+      verifiableCredential: [selectiveCredential],
+    };
+
+    expect(signer.signPresentation).toHaveBeenCalledWith(
+      expectedPresentation,
+      '1234.5678'
     );
 
     expect(presentation).toEqual({
       verifiablePresentation: {
-        '@context': [
-          'https://www.w3.org/2018/credentials/v1',
-          'https://identity.foundation/presentation-exchange/submission/v1',
-        ],
-        type: ['VerifiablePresentation', 'PresentationSubmission'],
-        holder: undefined,
-        presentation_submission: {
-          id: expect.any(String),
-          definition_id: '33bdb7eb-20fe-47dd-bed3-3f6c582d44d1',
-          descriptor_map: [
-            {
-              id: 'audit',
-              format: 'ldp_vc',
-              path: '$.verifiableCredential[0]',
-            },
-          ],
-        },
-        verifiableCredential: [selectiveCredential],
+        ...expectedPresentation,
         proof: {
-          challenge: 'abcd',
+          challenge: '1234.5678',
           proofValue: '1234',
           type: 'Ed25519Signature2020',
           verificationMethod: 'did:key:1234',
