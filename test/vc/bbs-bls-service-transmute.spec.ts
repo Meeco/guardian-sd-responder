@@ -1,14 +1,18 @@
 import { describe, expect, it } from '@jest/globals';
 import { credential, presentationDefinition } from '../fixtures/data.js';
+// import { PresentationSigner } from '../../src/vc/presentation-signer.js';
+// import { createSpyObject } from '../fixtures/create-spy-object.js';
 // import { TransmuteBbsBlsService } from '../../src/vc/bbs-bls-service-transmute.js';
 // import { testLoader } from '../fixtures/test-loader.js';
 
 describe('TransmuteBbsBlsService', () => {
+  // const signer = createSpyObject<PresentationSigner>();
+
   // This test fails to run in jest with ESM.
   // Since the Mattr service is being used for now anyway it is being skipped.
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip('derives a proof', async () => {
-    // const service = new TransmuteBbsBlsService(testLoader);
+    // const service = new TransmuteBbsBlsService(testLoader, signer);
     const service = {} as any;
 
     const derivedProof = await service.createProof(

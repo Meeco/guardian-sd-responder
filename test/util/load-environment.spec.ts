@@ -1,5 +1,5 @@
-import { Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
-import { afterEach, describe, expect, it } from '@jest/globals';
+import { PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { describe, expect, it } from '@jest/globals';
 import { loadEnvironment } from '../../src/util/load-environment.js';
 
 describe('Load environment', () => {
@@ -7,6 +7,7 @@ describe('Load environment', () => {
     LOG_LEVEL: 'info',
     RESPONDER_TOPIC_IDS: '0.0.123,0.0.456,0.0.789',
     RESPONDER_DID: 'did:key:1234',
+    RESPONDER_DID_KEY_ID: 'did-root-key',
     RESPONDER_DID_PUBLIC_KEY_HEX:
       '0000000000000000000000000000000000000000000000000000000000000000',
     RESPONDER_DID_PRIVATE_KEY_HEX:
@@ -16,14 +17,8 @@ describe('Load environment', () => {
       '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
   };
 
-  let client: Client | undefined;
-  afterEach(() => {
-    client?.close();
-  });
-
   it('parses all variables and returns environment configuration', () => {
     const env = loadEnvironment(exampleEnvironment);
-    client = env.client;
     expect(env).toEqual({
       accountId: '0.0.1',
       accountPrivateKey:
@@ -36,7 +31,14 @@ describe('Load environment', () => {
       responderPrivateKey: PrivateKey.fromString(
         '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
       ),
-      client: expect.any(Client),
+      responderKeyDetails: {
+        controller: 'did:key:1234',
+        id: 'did:key:1234#did-root-key',
+        privateKeyBase58:
+          '1111111111111111111111111111111111111111111111111111111111111111',
+        publicKeyBase58: '11111111111111111111111111111111',
+        type: 'Ed25519VerificationKey2018',
+      },
     });
   });
 
@@ -76,7 +78,7 @@ describe('Load environment', () => {
     const { RESPONDER_DID_PRIVATE_KEY_HEX, ...env } = exampleEnvironment;
     expect(() => loadEnvironment(env)).toThrow(
       new Error(
-        'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_PUBLIC_KEY_HEX must be present'
+        'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX, RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_KEY_ID must be present'
       )
     );
   });
@@ -85,7 +87,16 @@ describe('Load environment', () => {
     const { RESPONDER_DID_PUBLIC_KEY_HEX, ...env } = exampleEnvironment;
     expect(() => loadEnvironment(env)).toThrow(
       new Error(
-        'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_PUBLIC_KEY_HEX must be present'
+        'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX, RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_KEY_ID must be present'
+      )
+    );
+  });
+
+  it('requires an account did key id', () => {
+    const { RESPONDER_DID_KEY_ID, ...env } = exampleEnvironment;
+    expect(() => loadEnvironment(env)).toThrow(
+      new Error(
+        'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX, RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_KEY_ID must be present'
       )
     );
   });

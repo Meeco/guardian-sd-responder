@@ -20,6 +20,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@digitalbazaar/ed25519-signature-2020": "^5.2.0",
+    "@digitalbazaar/ed25519-verification-key-2020": "^4.1.0",
     "@digitalbazaar/vc": "^6.0.1",
     "@hashgraph/did-sdk-js": "^0.1.1",
     "@hashgraph/sdk": "^2.29.0",

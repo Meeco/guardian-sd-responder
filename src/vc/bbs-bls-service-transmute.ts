@@ -8,6 +8,7 @@ import {
   DocumentLoader,
   VerifiableCredential,
 } from './bbs-bls-service.js';
+import { PresentationSigner } from './presentation-signer.js';
 
 /**
  * Implementation for creating selective disclosure proofs using Transmute Industries packages.
@@ -17,10 +18,11 @@ export class TransmuteBbsBlsService
   implements BbsBlsService
 {
   constructor(
-    private readonly documentLoader: DocumentLoader,
+    protected readonly documentLoader: DocumentLoader,
+    protected readonly presentationSigner: PresentationSigner,
     protected readonly logger?: Logger
   ) {
-    super(logger);
+    super(documentLoader, presentationSigner, logger);
   }
 
   async createProof(
@@ -40,6 +42,7 @@ export class TransmuteBbsBlsService
     });
 
     this.logger?.debug('Derived proof:', derivedProof);
-    return derivedProof;
+    // Transmute library returns an array of items instead of just hte proof
+    return derivedProof.items[0];
   }
 }

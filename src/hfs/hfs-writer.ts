@@ -16,7 +16,7 @@ export class HfsWriter {
     private readonly writePrivateKey: PrivateKey,
     private readonly client: Client,
     private readonly logger?: Logger,
-    private readonly maxWriteHbar = 2
+    private readonly maxWriteHbar = 5
   ) {}
 
   public async writeFile(contents: string) {

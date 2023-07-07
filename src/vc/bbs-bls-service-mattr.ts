@@ -10,6 +10,7 @@ import {
   DocumentLoader,
   VerifiableCredential,
 } from './bbs-bls-service.js';
+import { PresentationSigner } from './presentation-signer.js';
 
 /**
  * Implementation for creating selective disclosure proofs using Mattr packages
@@ -19,10 +20,11 @@ export class MattrBbsBlsService
   implements BbsBlsService
 {
   constructor(
-    private readonly documentLoader: DocumentLoader,
+    protected readonly documentLoader: DocumentLoader,
+    protected readonly presentationSigner: PresentationSigner,
     protected readonly logger?: Logger
   ) {
-    super(logger);
+    super(documentLoader, presentationSigner, logger);
   }
 
   async createProof(

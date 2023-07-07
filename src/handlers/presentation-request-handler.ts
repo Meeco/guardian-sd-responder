@@ -41,6 +41,7 @@ export class PresentationRequestHandler implements Handler {
 
     const { recipient_did, request_file_id } =
       message.contents as PresentationRequestMessage;
+    const challenge = message.sequenceNumber.toString();
 
     if (recipient_did !== this.responderDid) {
       this.logger?.verbose(
@@ -107,13 +108,16 @@ export class PresentationRequestHandler implements Handler {
       presentation_definition
     );
 
-    const presentation = await this.bbsBlsService.preparePresentation(
+    const signedPresentation = await this.bbsBlsService.preparePresentation(
       presentation_definition,
-      derivedProof
+      derivedProof,
+      challenge
     );
 
     this.logger?.verbose('Write presentation to HFS');
-    const fileId = await this.writer.writeFile(JSON.stringify(presentation));
+    const fileId = await this.writer.writeFile(
+      JSON.stringify(signedPresentation)
+    );
 
     if (!fileId) {
       this.logger?.error(

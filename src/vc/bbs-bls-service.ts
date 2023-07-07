@@ -5,11 +5,18 @@ import { VerifiableCredential } from '@transmute/vc.js/dist/types/VerifiableCred
 import jsonpath from 'jsonpath';
 import { Logger } from 'winston';
 
+import { PresentationSigner } from './presentation-signer.js';
+import { DocumentLoader } from './types.js';
+
 // Re-export some types that are likely to change source
 export * from './types.js';
 
 export class BaseBbsBlsService {
-  constructor(protected readonly logger?: Logger) {}
+  constructor(
+    protected readonly documentLoader: DocumentLoader,
+    protected readonly presentationSigner: PresentationSigner,
+    protected readonly logger?: Logger
+  ) {}
 
   composeRevealDoc(
     credential: VerifiableCredential,
@@ -46,9 +53,13 @@ export class BaseBbsBlsService {
     return frame;
   }
 
+  /**
+   * Prepare a signed Verifiable Presentation for the given presentation definition.
+   */
   async preparePresentation(
     presentationDefinition: PresentationDefinitionV2,
-    derivedProof: any
+    derivedProof: any,
+    challenge: string
   ) {
     const pex = new PEXv2();
 
@@ -61,17 +72,18 @@ export class BaseBbsBlsService {
         limitDisclosureSignatureSuites: [IProofType.BbsBlsSignatureProof2020],
       }
     );
-    this.logger?.silly('Evaluation result', JSON.stringify(evaluationResults));
+    this.logger?.debug('Evaluated credential against presentation');
+    this.logger?.silly(JSON.stringify(evaluationResults));
 
-    // Note, currently unsigned
-    const presentationResult = await pex.presentationFrom(
+    const presentationResult = await pex.verifiablePresentationFrom(
       presentationDefinition,
-      derivedProof
+      derivedProof,
+      ({ presentation }) =>
+        this.presentationSigner.signPresentation(presentation, challenge),
+      {}
     );
-    this.logger?.silly(
-      'Presentation result',
-      JSON.stringify(presentationResult)
-    );
+    this.logger?.debug('Signed presentation result');
+    this.logger?.silly(JSON.stringify(presentationResult));
 
     return presentationResult;
   }

@@ -1,56 +1,26 @@
 import { Timestamp, TopicMessage, TransactionId } from '@hashgraph/sdk';
-import inquirer from 'inquirer';
 import Long from 'long';
 import { PresentationRequestHandler } from '../handlers/presentation-request-handler.js';
 import { DecodedMessage } from '../hcs/decoded-message.js';
-import { HcsMessenger } from '../hcs/hcs-messenger.js';
 import { MessageType } from '../hcs/messages.js';
-import { HfsReader } from '../hfs/hfs-reader.js';
-import { HfsWriter } from '../hfs/hfs-writer.js';
 import { jsonToBase64 } from '../util/encoders.js';
-import { LmdbStorage } from '../util/key-value-storage.js';
-import { loadEnvironment } from '../util/load-environment.js';
+import { createServices, loadEnvironment } from '../util/load-environment.js';
 import { log } from '../util/logger.js';
-import { TransmuteBbsBlsService } from '../vc/bbs-bls-service-transmute.js';
-import { CredentialRegistry } from '../vc/credential-registry.js';
-import { PexDocumentLoader } from '../vc/document-loader.js';
 
 // Process a 'request' for the given file id without the need to actually add a
 // request message to a listened topic.
 
-const {
-  client,
-  responderPublicKey,
-  responderPrivateKey,
-  responderDid,
-  responderTopicsIds,
-} = loadEnvironment();
-
-const { requestFileId } = await inquirer.prompt([
-  {
-    name: 'requestFileId',
-    message: 'Enter HFS file id of request file',
-  },
-]);
-
-const [topicId] = responderTopicsIds;
-const messenger = new HcsMessenger(client, log);
-const storage = new LmdbStorage();
-const reader = new HfsReader(client);
-const documentLoader = new PexDocumentLoader(storage, log);
-const bbsBlsService = new TransmuteBbsBlsService(documentLoader.loader, log);
-const writer = new HfsWriter(
-  responderPublicKey,
-  responderPrivateKey,
-  client,
-  log
-);
-
-const registry = new CredentialRegistry(storage, reader);
+const environment = loadEnvironment();
+const { responderDid, responderTopicsIds } = environment;
+const { registry, reader, writer, messenger, bbsBlsService } =
+  createServices(environment);
 await registry.registerCredential(
   `urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9`,
   '0.0.15043617'
 );
+
+const [topicId] = responderTopicsIds;
+const requestFileId = '0.0.15056857';
 
 const requestHandler = new PresentationRequestHandler(
   responderDid,

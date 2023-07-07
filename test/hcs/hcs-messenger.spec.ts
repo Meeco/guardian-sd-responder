@@ -27,7 +27,7 @@ describe('HcsMessenger', () => {
 
     expect(executeMock).toHaveBeenCalledWith(client);
     expect(logger.silly).toHaveBeenCalledWith(
-      'The message transaction status: 0'
+      'The message transaction status: "0"'
     );
   });
 
