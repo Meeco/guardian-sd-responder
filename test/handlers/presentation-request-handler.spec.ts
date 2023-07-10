@@ -78,7 +78,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).not.toHaveBeenCalled();
   });
 
-  it('ignores requests that do not have a valid credential id', async () => {
+  it('ignores requests that do not have a did in the authorization details', async () => {
     const message = DecodedMessage.fromTopicMessage(
       createTopicMessage({
         ...baseMessage,
@@ -93,16 +93,50 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
 
-    expect(logger.info).toHaveBeenCalledWith(
-      `Unable to determine credential ID from request. It will be ignored`
-    );
     expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).not.toHaveBeenCalled();
   });
 
-  it('ignores requests for credentials that can not be fetched', async () => {
+  it('send an error for requests that do not have a valid credential id', async () => {
+    const message = DecodedMessage.fromTopicMessage(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    reader.readFileAsJson.mockResolvedValue({
+      authorization_details: {
+        did: 'did:key:4567',
+      },
+      presentation_definition: {},
+    });
+
+    await handler.handle(message);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      `Unable to determine credential ID from request. It will be ignored`
+    );
+    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
+    expect(registry.fetchCredential).not.toHaveBeenCalled();
+    expect(bbsBls.createProof).not.toHaveBeenCalled();
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:4567',
+        error: {
+          code: 'MISSING_CREDENTIAL_ID',
+          message: `Unable to determine credential ID from request. It will be ignored`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('sends an error for requests for credentials that can not be fetched', async () => {
     const message = DecodedMessage.fromTopicMessage(
       createTopicMessage({
         operation: MessageType.PRESENTATION_REQUEST,
@@ -115,18 +149,135 @@ describe('PresentationRequestHandler', () => {
     )!;
 
     reader.readFileAsJson.mockResolvedValue({
+      authorization_details: {
+        did: 'did:key:4567',
+      },
       presentation_definition: presentationDefinition,
     });
 
     await handler.handle(message);
 
-    expect(logger.info).toHaveBeenCalledWith(
+    expect(logger.error).toHaveBeenCalledWith(
       `Unable to fetch the credential "${credentialId}". Request can not be handled`
     );
     expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.111');
     expect(registry.fetchCredential).toHaveBeenCalledWith(credentialId);
     expect(bbsBls.createProof).not.toHaveBeenCalled();
-    expect(messenger.send).not.toHaveBeenCalled();
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:4567',
+        error: {
+          code: 'CREDENTIAL_NOT_FOUND',
+          message: `Unable to fetch the credential "${credentialId}". Request can not be handled`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('returns an error if hfs write of presentation does not return an id', async () => {
+    const message = DecodedMessage.fromTopicMessage(
+      createTopicMessage(
+        {
+          operation: MessageType.PRESENTATION_REQUEST,
+          recipient_did: 'did:key:1234',
+          request_file_id: '0.0.111',
+          request_file_dek_encrypted_base64: '',
+          request_file_public_key_id: '',
+        },
+        501
+      ),
+      '0.0.1234'
+    )!;
+    const presentation = {
+      authorization_details: {
+        did: 'did:key:request_did',
+      },
+      presentation: selectiveCredential,
+    };
+
+    reader.readFileAsJson.mockResolvedValue({
+      presentation_definition: presentationDefinition,
+      authorization_details: {
+        did: 'did:key:request_did',
+      },
+    });
+    registry.fetchCredential.mockResolvedValue(credential);
+    messenger.send.mockResolvedValue(null);
+    writer.writeFile.mockResolvedValue(null);
+    bbsBls.createProof.mockResolvedValue(selectiveCredential);
+    bbsBls.preparePresentation.mockResolvedValue(presentation);
+
+    await handler.handle(message);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      new Error(
+        'Writing file to HFS did not return a file id - can not respond'
+      )
+    );
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:request_did',
+        error: {
+          code: 'UNKNOWN_ERROR',
+          message: `There was an unexpected problem processing the request`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('returns a generic error response for all other errors', async () => {
+    const message = DecodedMessage.fromTopicMessage(
+      createTopicMessage(
+        {
+          operation: MessageType.PRESENTATION_REQUEST,
+          recipient_did: 'did:key:1234',
+          request_file_id: '0.0.111',
+          request_file_dek_encrypted_base64: '',
+          request_file_public_key_id: '',
+        },
+        501
+      ),
+      '0.0.1234'
+    )!;
+    const presentation = {
+      presentation: selectiveCredential,
+    };
+
+    reader.readFileAsJson.mockResolvedValue({
+      presentation_definition: presentationDefinition,
+      authorization_details: {
+        did: 'did:key:request_did',
+      },
+    });
+    registry.fetchCredential.mockResolvedValue(credential);
+    messenger.send.mockResolvedValue(null);
+    writer.writeFile.mockRejectedValue(new Error('Test error'));
+    bbsBls.createProof.mockResolvedValue(selectiveCredential);
+    bbsBls.preparePresentation.mockResolvedValue(presentation);
+
+    await handler.handle(message);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      `There was an unexpected problem processing the request`
+    );
+    expect(logger.error).toHaveBeenCalledWith(new Error('Test error'));
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:request_did',
+        error: {
+          code: 'UNKNOWN_ERROR',
+          message: `There was an unexpected problem processing the request`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
   });
 
   it('composes a presentation with derived proof, writes it to hfs and responds with hcs message', async () => {
