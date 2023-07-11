@@ -3,8 +3,8 @@ import { DecodedMessage } from '../hcs/decoded-message.js';
 /**
  * Handler for a specific `operation` in a HCS message
  */
-export abstract class Handler {
-  abstract readonly operation: string;
+export abstract class Handler<T extends { operation: string } = any> {
+  abstract readonly operation: T['operation'];
 
-  abstract handle(message: DecodedMessage): Promise<void>;
+  abstract handle(message: DecodedMessage<T>): Promise<void>;
 }

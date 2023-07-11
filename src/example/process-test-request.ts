@@ -1,8 +1,9 @@
 import { Timestamp, TopicMessage, TransactionId } from '@hashgraph/sdk';
+import { EncryptionKey } from '@meeco/cryppo';
 import Long from 'long';
 import { PresentationRequestHandler } from '../handlers/presentation-request-handler.js';
 import { DecodedMessage } from '../hcs/decoded-message.js';
-import { MessageType } from '../hcs/messages.js';
+import { MessageType, PresentationRequestMessage } from '../hcs/messages.js';
 import { jsonToBase64 } from '../util/encoders.js';
 import { createServices, loadEnvironment } from '../util/load-environment.js';
 import { log } from '../util/logger.js';
@@ -11,12 +12,20 @@ import { log } from '../util/logger.js';
 // request message to a listened topic.
 
 const environment = loadEnvironment();
-const { responderDid, responderTopicsIds } = environment;
+const { responderDid, responderTopicsIds, passphraseEncryptionKeyHex } =
+  environment;
 const { registry, reader, writer, messenger, bbsBlsService } =
   createServices(environment);
+
 await registry.registerCredential(
-  `urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9`,
-  '0.0.15043617'
+  {
+    operation: MessageType.REGISTER_CREDENTIAL,
+    vc_id: `urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9`,
+    encrypted_passphrase:
+      'Aes256Gcm.lESQoX90KLyB4FM8kKnW1tYmsPI9P9Ma3RPQhqYz21Q=.QUAAAAAFaXYADAAAAABGLi4kytbeaqKAuHIFYXQAEAAAAABTNaI2LuYsHWFl97TN91bQAmFkAAUAAABub25lAAA=',
+    ipfs_cid: 'QmNxHdP8EoKQTqLDZtVijv66aeGKsxGEPwCz4AMkj2AExZ',
+  },
+  EncryptionKey.fromBytes(Buffer.from(passphraseEncryptionKeyHex, 'hex'))
 );
 
 const [topicId] = responderTopicsIds;
@@ -53,7 +62,9 @@ const message = {
   sequenceNumber,
 } as TopicMessage;
 
-await requestHandler.handle(DecodedMessage.fromTopicMessage(message, topicId)!);
+await requestHandler.handle(
+  DecodedMessage.fromTopicMessage<PresentationRequestMessage>(message, topicId)!
+);
 
 log.info('Complete');
 process.exit(0);

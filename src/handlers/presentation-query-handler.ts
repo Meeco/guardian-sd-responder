@@ -14,7 +14,9 @@ import { Handler } from './handler.js';
  * message via HCS only if the query could be fulfilled by this responder (based
  * on known credential ids).
  */
-export class PresentationQueryHandler implements Handler {
+export class PresentationQueryHandler
+  implements Handler<PresentationQueryMessage>
+{
   constructor(
     private readonly responderDid: string,
     private readonly hcsMessenger: HcsMessenger,
@@ -24,7 +26,7 @@ export class PresentationQueryHandler implements Handler {
 
   readonly operation = MessageType.PRESENTATION_QUERY;
 
-  async handle(message: DecodedMessage) {
+  async handle(message: DecodedMessage<PresentationQueryMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
     const { vc_id, requester_did } =

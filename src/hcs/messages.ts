@@ -3,6 +3,7 @@ export enum MessageType {
   QUERY_RESPONSE = 'query-response',
   PRESENTATION_REQUEST = 'presentation-request',
   PRESENTATION_RESPONSE = 'presentation-response',
+  REGISTER_CREDENTIAL = 'register-credential',
 }
 
 /**
@@ -47,4 +48,11 @@ export interface PresentationResponseMessage {
     code: string;
     message: string;
   };
+}
+
+export interface RegisterCredentialMessage {
+  operation: MessageType.REGISTER_CREDENTIAL;
+  vc_id: string;
+  ipfs_cid: string;
+  encrypted_passphrase: string;
 }
