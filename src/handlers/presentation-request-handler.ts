@@ -63,84 +63,134 @@ export class PresentationRequestHandler implements Handler {
     const { authorization_details, presentation_definition } =
       presentationRequest;
 
-    const descriptors = presentation_definition?.input_descriptors ?? [];
-
-    let field: FieldV2 | undefined;
-
-    descriptors.find((descriptor) => {
-      field = descriptor?.constraints?.fields?.find(
-        (field) => field.path && field.path[0] === '$.id'
-      );
-      return field;
-    });
-
-    const credentialId = field?.filter?.const;
-
-    if (!credentialId) {
+    if (!authorization_details?.did) {
       this.logger?.info(
-        `Unable to determine credential ID from request. It will be ignored`
+        `Request authorization did not contain a did - ignoring request`
       );
       return;
     }
-
-    this.logger?.verbose(`Fetch credential "${credentialId}"`);
-    let credential: VerifiableCredential | undefined;
 
     try {
-      credential = await this.registry.fetchCredential(credentialId as string);
+      const descriptors = presentation_definition?.input_descriptors ?? [];
+
+      let field: FieldV2 | undefined;
+
+      descriptors.find((descriptor) => {
+        field = descriptor?.constraints?.fields?.find(
+          (field) => field.path && field.path[0] === '$.id'
+        );
+        return field;
+      });
+
+      const credentialId = field?.filter?.const;
+
+      if (!credentialId) {
+        return this.sendErrorResponse({
+          recipient_did: authorization_details.did,
+          topicId: message.topicId,
+          error: {
+            code: 'MISSING_CREDENTIAL_ID',
+            message: `Unable to determine credential ID from request. It will be ignored`,
+          },
+        });
+      }
+
+      let credential: VerifiableCredential | undefined;
+
+      try {
+        credential = await this.registry.fetchCredential(
+          credentialId as string
+        );
+      } catch (err) {
+        // Skip if can't fetch
+      }
+
+      this.logger?.debug(credential);
+
+      if (!credential) {
+        return this.sendErrorResponse({
+          recipient_did: authorization_details.did,
+          topicId: message.topicId,
+          error: {
+            code: 'CREDENTIAL_NOT_FOUND',
+            message: `Unable to fetch the credential "${credentialId}". Request can not be handled`,
+          },
+        });
+      }
+
+      this.logger?.verbose('Derive proof');
+
+      const derivedProof = await this.bbsBlsService.createProof(
+        credential,
+        presentation_definition
+      );
+
+      const signedPresentation = await this.bbsBlsService.preparePresentation(
+        presentation_definition,
+        derivedProof,
+        challenge
+      );
+
+      this.logger?.verbose('Write presentation to HFS');
+      const fileId = await this.writer.writeFile(
+        JSON.stringify(signedPresentation)
+      );
+
+      if (!fileId) {
+        throw new Error(
+          'Writing file to HFS did not return a file id - can not respond'
+        );
+      }
+
+      const response: PresentationResponseMessage = {
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: authorization_details.did,
+        response_file_dek_encrypted_base64: '',
+        response_file_id: fileId.toString(),
+      };
+
+      this.logger?.verbose(`Sending response "${response.operation}"`);
+      this.logger?.debug(response);
+
+      await this.hcsMessenger.send({
+        message: JSON.stringify(response),
+        topicId: message.topicId,
+      });
+
+      this.logger?.info(`Processing "${this.operation}" complete`);
     } catch (err) {
-      // Skip if can't fetch
+      this.logger?.error(err);
+      return this.sendErrorResponse({
+        recipient_did: authorization_details.did,
+        topicId: message.topicId,
+        error: {
+          code: 'UNKNOWN_ERROR',
+          message: `There was an unexpected problem processing the request`,
+        },
+      });
     }
+  }
 
-    this.logger?.debug(credential);
-
-    if (!credential) {
-      this.logger?.info(
-        `Unable to fetch the credential "${credentialId}". Request can not be handled`
-      );
-      return;
-    }
-
-    this.logger?.verbose('Derive proof');
-
-    const derivedProof = await this.bbsBlsService.createProof(
-      credential,
-      presentation_definition
-    );
-
-    const signedPresentation = await this.bbsBlsService.preparePresentation(
-      presentation_definition,
-      derivedProof,
-      challenge
-    );
-
-    this.logger?.verbose('Write presentation to HFS');
-    const fileId = await this.writer.writeFile(
-      JSON.stringify(signedPresentation)
-    );
-
-    if (!fileId) {
-      this.logger?.error(
-        `Writing file to HFS did not return a file id - can not respond`
-      );
-      return;
-    }
+  async sendErrorResponse({
+    recipient_did,
+    topicId,
+    error,
+  }: {
+    recipient_did: string;
+    topicId: string;
+    error: { code: string; message: string };
+  }) {
+    this.logger?.error(error.message);
 
     const response: PresentationResponseMessage = {
       operation: MessageType.PRESENTATION_RESPONSE,
-      recipient_did: authorization_details.did,
-      response_file_dek_encrypted_base64: '',
-      response_file_id: fileId.toString(),
+      recipient_did,
+      error,
     };
-
-    this.logger?.verbose(`Sending response "${response.operation}"`);
-    this.logger?.debug(response);
 
     await this.hcsMessenger.send({
       message: JSON.stringify(response),
-      topicId: message.topicId,
+      topicId,
     });
-
-    this.logger?.info(`Processing "${this.operation}" complete`);
   }
 }

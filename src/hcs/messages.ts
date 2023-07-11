@@ -41,6 +41,10 @@ export interface PresentationRequestMessage {
 export interface PresentationResponseMessage {
   operation: MessageType.PRESENTATION_RESPONSE;
   recipient_did: string;
-  response_file_id: string;
-  response_file_dek_encrypted_base64: string;
+  response_file_id?: string;
+  response_file_dek_encrypted_base64?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
 }

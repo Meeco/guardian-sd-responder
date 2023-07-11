@@ -29,7 +29,7 @@ export class HfsWriter {
     const signed = await transaction.sign(this.writePrivateKey);
     const txId = await signed.execute(this.client);
     const receipt = await txId.getReceipt(this.client);
-    const fileId = receipt.fileId;
+    const fileId = receipt?.fileId;
 
     this.logger?.info(`Wrote file ${fileId}`);
 
