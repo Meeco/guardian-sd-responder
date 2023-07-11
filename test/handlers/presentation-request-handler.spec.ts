@@ -3,7 +3,10 @@ import { Logger } from 'winston';
 import { PresentationRequestHandler } from '../../src/handlers/presentation-request-handler.js';
 import { DecodedMessage } from '../../src/hcs/decoded-message.js';
 import { HcsMessenger } from '../../src/hcs/hcs-messenger.js';
-import { MessageType } from '../../src/hcs/messages.js';
+import {
+  MessageType,
+  PresentationRequestMessage,
+} from '../../src/hcs/messages.js';
 import { HfsReader } from '../../src/hfs/hfs-reader.js';
 import { HfsWriter } from '../../src/hfs/hfs-writer.js';
 import { BbsBlsService } from '../../src/vc/bbs-bls-service.js';
@@ -56,7 +59,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('ignores requests not intended for the given responder did', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
         ...baseMessage,
         recipient_did: 'did:key:4567',
@@ -79,7 +82,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('ignores requests that do not have a did in the authorization details', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
         ...baseMessage,
         recipient_did: 'did:key:1234',
@@ -100,7 +103,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('send an error for requests that do not have a valid credential id', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
         ...baseMessage,
         recipient_did: 'did:key:1234',
@@ -137,7 +140,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('sends an error for requests for credentials that can not be fetched', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_REQUEST,
         recipient_did: 'did:key:1234',
@@ -154,6 +157,7 @@ describe('PresentationRequestHandler', () => {
       },
       presentation_definition: presentationDefinition,
     });
+    registry.fetchCredential.mockRejectedValue(new Error('Test error'));
 
     await handler.handle(message);
 
@@ -177,7 +181,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('returns an error if hfs write of presentation does not return an id', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage(
         {
           operation: MessageType.PRESENTATION_REQUEST,
@@ -231,7 +235,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('returns a generic error response for all other errors', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage(
         {
           operation: MessageType.PRESENTATION_REQUEST,
@@ -281,7 +285,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('composes a presentation with derived proof, writes it to hfs and responds with hcs message', async () => {
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage(
         {
           operation: MessageType.PRESENTATION_REQUEST,

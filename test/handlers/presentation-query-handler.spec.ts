@@ -3,7 +3,10 @@ import { Logger } from 'winston';
 import { PresentationQueryHandler } from '../../src/handlers/presentation-query-handler.js';
 import { DecodedMessage } from '../../src/hcs/decoded-message.js';
 import { HcsMessenger } from '../../src/hcs/hcs-messenger.js';
-import { MessageType } from '../../src/hcs/messages.js';
+import {
+  MessageType,
+  PresentationQueryMessage,
+} from '../../src/hcs/messages.js';
 import { CredentialRegistry } from '../../src/vc/credential-registry.js';
 import { SpyObject, createSpyObject } from '../fixtures/create-spy-object.js';
 import { createTopicMessage } from '../fixtures/create-topic-message.js';
@@ -30,7 +33,7 @@ describe('PresentationQueryHandler', () => {
   it('responds to valid operations that it can handle', async () => {
     registry.canHandleCredential.mockResolvedValue(true);
 
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:955afba1-d4b8-4d39-8fb3-ff77742cb403',
@@ -58,7 +61,7 @@ describe('PresentationQueryHandler', () => {
   it('does not respond to messages that are missing required parameters', async () => {
     registry.canHandleCredential.mockResolvedValue(false);
 
-    const messageA = DecodedMessage.fromTopicMessage(
+    const messageA = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:18b8e91b-381c-4686-a096-4c66c153bb69',
@@ -66,7 +69,7 @@ describe('PresentationQueryHandler', () => {
       }),
       '0.0.1234'
     )!;
-    const messageB = DecodedMessage.fromTopicMessage(
+    const messageB = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
         responder_did: 'did:key:1234',
@@ -90,7 +93,7 @@ describe('PresentationQueryHandler', () => {
   it('does not respond to messages for credentials that are not registered', async () => {
     registry.canHandleCredential.mockResolvedValue(false);
 
-    const message = DecodedMessage.fromTopicMessage(
+    const message = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:18b8e91b-381c-4686-a096-4c66c153bb69',

@@ -1,30 +1,55 @@
-import { beforeEach, describe, expect, it } from '@jest/globals';
-import { HfsReader } from '../../src/hfs/hfs-reader.js';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  CipherStrategy,
+  EncryptionKey,
+  encryptWithKey,
+  utf8ToBytes,
+} from '@meeco/cryppo';
+import { MessageType } from '../../src/hcs/messages.js';
+import { ResultType, fetchIPFSFile } from '../../src/util/ipfs-fetch.js';
 import { KeyValueStorage } from '../../src/util/key-value-storage.js';
 import { CredentialRegistry } from '../../src/vc/credential-registry.js';
 import { SpyObject, createSpyObject } from '../fixtures/create-spy-object.js';
 
 describe('CredentialRegistry', () => {
   let mockStore: SpyObject<KeyValueStorage>;
-  let mockHfsReader: SpyObject<HfsReader>;
+  let ipfsReader: jest.Mock<typeof fetchIPFSFile>;
   let credentialRegistry: CredentialRegistry;
 
   beforeEach(() => {
     mockStore = createSpyObject<KeyValueStorage>();
-    mockHfsReader = createSpyObject<HfsReader>();
-    credentialRegistry = new CredentialRegistry(mockStore, mockHfsReader);
+    ipfsReader = jest.fn();
+    credentialRegistry = new CredentialRegistry(mockStore, ipfsReader);
   });
 
   describe('registerCredential', () => {
-    it('writes the hederaFileId to the store with the correct key', () => {
-      const id = 'example-id';
-      const hederaFileId = '0.0.123';
+    it('writes the ipfs cid and passphrase to the store with the correct key', async () => {
+      const vc_id = 'example-id';
+      const ipfs_cid = 'Qm12345';
+      const key = EncryptionKey.generateRandom(32);
+      const passphrase = EncryptionKey.generateRandom(32);
+      const encrypted_passphrase = await encryptWithKey({
+        data: passphrase.bytes,
+        key: key,
+        strategy: CipherStrategy.AES_GCM,
+      });
 
-      credentialRegistry.registerCredential(id, hederaFileId);
+      await credentialRegistry.registerCredential(
+        {
+          operation: MessageType.REGISTER_CREDENTIAL,
+          ipfs_cid,
+          vc_id,
+          encrypted_passphrase: encrypted_passphrase.serialized!,
+        },
+        key
+      );
 
       expect(mockStore.write).toHaveBeenCalledWith(
-        `known_credentials:${id}`,
-        hederaFileId
+        `known_credentials:${vc_id}`,
+        {
+          ipfs_cid,
+          key: passphrase.bytes,
+        }
       );
     });
   });
@@ -65,36 +90,45 @@ describe('CredentialRegistry', () => {
       const result = await credentialRegistry.fetchCredential(id);
 
       expect(mockStore.read).toHaveBeenCalledWith(`vc:${id}`);
-      expect(mockHfsReader.readFileAsJson).not.toHaveBeenCalled();
+      expect(ipfsReader).not.toHaveBeenCalled();
       expect(result).toBe(credential);
     });
 
     it('fetches the credential from the store, caches it and returns it if not available in cache', async () => {
       const id = 'example-id';
-      const credentialFileId = 'example-credential-file-id';
+      const ipfs_cid = 'Qm1234';
       const credential = {
         id: 'example-id',
         description: 'Fetched credential',
       };
+      const key = EncryptionKey.generateRandom(32);
+      const encryptedCredential = await encryptWithKey({
+        data: utf8ToBytes(JSON.stringify(credential)),
+        key,
+        strategy: CipherStrategy.AES_GCM,
+      });
 
       // Cached value not available
       mockStore.read.mockResolvedValueOnce(null);
-      mockStore.read.mockResolvedValueOnce(credentialFileId);
-      mockHfsReader.readFileAsJson.mockResolvedValue(credential);
+      mockStore.read.mockResolvedValueOnce({
+        ipfs_cid,
+        key: key.bytes,
+      });
+      ipfsReader.mockResolvedValue(encryptedCredential.serialized);
 
       const result = await credentialRegistry.fetchCredential(id);
 
       expect(mockStore.read).toHaveBeenCalledWith(`vc:${id}`);
       expect(mockStore.read).toHaveBeenCalledWith(`known_credentials:${id}`);
-      expect(mockHfsReader.readFileAsJson).toHaveBeenCalledWith(
-        credentialFileId
-      );
+      expect(ipfsReader).toHaveBeenCalledWith(ipfs_cid, {
+        resultType: ResultType.TEXT,
+      });
       expect(mockStore.write).toHaveBeenCalledWith(`vc:${id}`, {
         credential,
         cachedAt: expect.any(Date),
       });
 
-      expect(result).toBe(credential);
+      expect(result).toEqual(credential);
     });
   });
 });

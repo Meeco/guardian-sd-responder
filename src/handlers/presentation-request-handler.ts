@@ -23,7 +23,9 @@ import { Handler } from './handler.js';
  * is then composed into a Verifiable Presentation and returned as a
  * presentation-response message via HCS.
  */
-export class PresentationRequestHandler implements Handler {
+export class PresentationRequestHandler
+  implements Handler<PresentationRequestMessage>
+{
   public readonly operation = MessageType.PRESENTATION_REQUEST;
 
   constructor(
@@ -36,7 +38,7 @@ export class PresentationRequestHandler implements Handler {
     protected readonly logger?: Logger
   ) {}
 
-  async handle(message: DecodedMessage) {
+  async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
     const { recipient_did, request_file_id } =
@@ -95,19 +97,15 @@ export class PresentationRequestHandler implements Handler {
         });
       }
 
-      let credential: VerifiableCredential | undefined;
+      let credential: VerifiableCredential;
 
       try {
         credential = await this.registry.fetchCredential(
           credentialId as string
         );
       } catch (err) {
-        // Skip if can't fetch
-      }
+        this.logger?.error(err);
 
-      this.logger?.debug(credential);
-
-      if (!credential) {
         return this.sendErrorResponse({
           recipient_did: authorization_details.did,
           topicId: message.topicId,

@@ -5,23 +5,23 @@ import { decodeBase64Json } from '../util/encoders.js';
 /**
  * HCS message with the message contents decoded as JSON.
  */
-export class DecodedMessage {
+export class DecodedMessage<T = { [key: string]: any }> {
   private constructor(
     public readonly consensusTimestamp: Timestamp,
     public readonly sequenceNumber: Long,
     public readonly topicId: string,
-    public readonly contents: { [key: string]: any }
+    public readonly contents: T
   ) {}
 
-  static fromTopicMessage(
+  static fromTopicMessage<T = { [key: string]: any }>(
     message: TopicMessage,
     topicId: string,
     logger?: Logger
-  ): DecodedMessage | null {
+  ): DecodedMessage<T> | null {
     try {
       const contents = decodeBase64Json(message.contents);
 
-      return new DecodedMessage(
+      return new DecodedMessage<T>(
         message.consensusTimestamp,
         message.sequenceNumber,
         topicId,

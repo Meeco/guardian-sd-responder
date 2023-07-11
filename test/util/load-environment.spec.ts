@@ -15,6 +15,7 @@ describe('Load environment', () => {
     RESPONDER_ACCOUNT_ID: '0.0.1',
     RESPONDER_ACCOUNT_PRIVATE_KEY:
       '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    PASSPHRASE_ENCRYPTION_KEY_HEX: 'abcd124',
   };
 
   it('parses all variables and returns environment configuration', () => {
@@ -39,6 +40,7 @@ describe('Load environment', () => {
         publicKeyBase58: '11111111111111111111111111111111',
         type: 'Ed25519VerificationKey2018',
       },
+      passphraseEncryptionKeyHex: 'abcd124',
     });
   });
 
@@ -97,6 +99,15 @@ describe('Load environment', () => {
     expect(() => loadEnvironment(env)).toThrow(
       new Error(
         'Environment variables RESPONDER_DID_PUBLIC_KEY_HEX, RESPONDER_DID_PUBLIC_KEY_HEX and RESPONDER_DID_KEY_ID must be present'
+      )
+    );
+  });
+
+  it('requires a passphrase encryption key', () => {
+    const { PASSPHRASE_ENCRYPTION_KEY_HEX, ...env } = exampleEnvironment;
+    expect(() => loadEnvironment(env)).toThrow(
+      new Error(
+        'Environment variable PASSPHRASE_ENCRYPTION_KEY_HEX must be present'
       )
     );
   });

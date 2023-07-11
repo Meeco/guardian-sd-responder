@@ -11,6 +11,7 @@ import {
   Ed25519VerificationKey2020Key,
   PresentationSigner,
 } from '../vc/presentation-signer.js';
+import { fetchIPFSFile } from './ipfs-fetch.js';
 import { LmdbStorage } from './key-value-storage.js';
 import { log } from './logger.js';
 
@@ -19,6 +20,7 @@ interface EnvironmentConfiguration {
   accountPrivateKey: string;
   responderDid: string;
   responderTopicsIds: string[];
+  passphraseEncryptionKeyHex: string;
   responderPublicKey: PublicKey;
   responderPrivateKey: PrivateKey;
   responderKeyDetails:
@@ -41,6 +43,8 @@ export const loadEnvironment = (
   const responderKeyId = env.RESPONDER_DID_KEY_ID;
   const responderPublicKeyHex = env.RESPONDER_DID_PUBLIC_KEY_HEX;
   const responderPrivateKeyHex = env.RESPONDER_DID_PRIVATE_KEY_HEX;
+
+  const passphraseEncryptionKeyHex = env.PASSPHRASE_ENCRYPTION_KEY_HEX;
 
   if (!accountId || !accountPrivateKey) {
     throw new Error(
@@ -68,6 +72,12 @@ export const loadEnvironment = (
     );
   }
 
+  if (!passphraseEncryptionKeyHex) {
+    throw new Error(
+      'Environment variable PASSPHRASE_ENCRYPTION_KEY_HEX must be present'
+    );
+  }
+
   const responderPublicKey = PublicKey.fromString(responderPublicKeyHex);
   const responderPrivateKey = PrivateKey.fromString(responderPrivateKeyHex);
 
@@ -78,6 +88,7 @@ export const loadEnvironment = (
     responderTopicsIds,
     responderPublicKey,
     responderPrivateKey,
+    passphraseEncryptionKeyHex,
     responderKeyDetails: {
       id: `${responderDid}#${responderKeyId}`,
       controller: responderDid,
@@ -128,7 +139,7 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
     log
   );
 
-  const registry = new CredentialRegistry(storage, reader);
+  const registry = new CredentialRegistry(storage, fetchIPFSFile, log);
 
   return {
     messenger,
