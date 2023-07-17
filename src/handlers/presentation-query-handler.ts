@@ -29,10 +29,10 @@ export class PresentationQueryHandler
   async handle(message: DecodedMessage<PresentationQueryMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { vc_id, requester_did } =
+    const { vc_id, requester_did, request_id } =
       message.contents as PresentationQueryMessage;
 
-    if (!vc_id || !requester_did) {
+    if (!vc_id || !requester_did || !request_id) {
       this.logger?.error(
         `Message "${message.sequenceNumber}" did not contain the required parameters for "${this.operation}"`
       );
@@ -47,6 +47,7 @@ export class PresentationQueryHandler
 
     const response: QueryResponseMessage = {
       operation: MessageType.QUERY_RESPONSE,
+      request_id,
       responder_did: this.responderDid,
       offer_hbar: 0,
     };
