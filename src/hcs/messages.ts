@@ -11,6 +11,7 @@ export enum MessageType {
  */
 export interface PresentationQueryMessage {
   operation: MessageType.PRESENTATION_QUERY;
+  request_id: string;
   vc_id: string;
   requester_did: string;
   limit_hbar: number;
@@ -21,6 +22,7 @@ export interface PresentationQueryMessage {
  */
 export interface QueryResponseMessage {
   operation: MessageType.QUERY_RESPONSE;
+  request_id: string;
   responder_did: string;
   offer_hbar: number;
 }
@@ -30,6 +32,7 @@ export interface QueryResponseMessage {
  */
 export interface PresentationRequestMessage {
   operation: MessageType.PRESENTATION_REQUEST;
+  request_id: string;
   recipient_did: string;
   request_file_id: string;
   request_file_dek_encrypted_base64: string;
@@ -41,6 +44,7 @@ export interface PresentationRequestMessage {
  */
 export interface PresentationResponseMessage {
   operation: MessageType.PRESENTATION_RESPONSE;
+  request_id: string;
   recipient_did: string;
   response_file_id?: string;
   response_file_dek_encrypted_base64?: string;

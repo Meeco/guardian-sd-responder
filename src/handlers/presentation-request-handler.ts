@@ -41,7 +41,7 @@ export class PresentationRequestHandler
   async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { recipient_did, request_file_id } =
+    const { recipient_did, request_file_id, request_id } =
       message.contents as PresentationRequestMessage;
     const challenge = message.sequenceNumber.toString();
 
@@ -89,6 +89,7 @@ export class PresentationRequestHandler
       if (!credentialId) {
         return this.sendErrorResponse({
           recipient_did: authorization_details.did,
+          request_id,
           topicId: message.topicId,
           error: {
             code: 'MISSING_CREDENTIAL_ID',
@@ -108,6 +109,7 @@ export class PresentationRequestHandler
 
         return this.sendErrorResponse({
           recipient_did: authorization_details.did,
+          request_id,
           topicId: message.topicId,
           error: {
             code: 'CREDENTIAL_NOT_FOUND',
@@ -142,6 +144,7 @@ export class PresentationRequestHandler
 
       const response: PresentationResponseMessage = {
         operation: MessageType.PRESENTATION_RESPONSE,
+        request_id,
         recipient_did: authorization_details.did,
         response_file_dek_encrypted_base64: '',
         response_file_id: fileId.toString(),
@@ -160,6 +163,7 @@ export class PresentationRequestHandler
       this.logger?.error(err);
       return this.sendErrorResponse({
         recipient_did: authorization_details.did,
+        request_id,
         topicId: message.topicId,
         error: {
           code: 'UNKNOWN_ERROR',
@@ -171,10 +175,12 @@ export class PresentationRequestHandler
 
   async sendErrorResponse({
     recipient_did,
+    request_id,
     topicId,
     error,
   }: {
     recipient_did: string;
+    request_id: string;
     topicId: string;
     error: { code: string; message: string };
   }) {
@@ -182,6 +188,7 @@ export class PresentationRequestHandler
 
     const response: PresentationResponseMessage = {
       operation: MessageType.PRESENTATION_RESPONSE,
+      request_id,
       recipient_did,
       error,
     };

@@ -36,6 +36,7 @@ describe('PresentationQueryHandler', () => {
     const message = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
+        request_id: '123',
         vc_id: 'urn:uuid:955afba1-d4b8-4d39-8fb3-ff77742cb403',
         requester_did: 'did:key:5678',
         limit_hbar: 0,
@@ -51,6 +52,7 @@ describe('PresentationQueryHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.QUERY_RESPONSE,
+        request_id: '123',
         responder_did: 'did:key:1234',
         offer_hbar: 0,
       }),
@@ -96,6 +98,7 @@ describe('PresentationQueryHandler', () => {
     const message = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
       createTopicMessage({
         operation: MessageType.PRESENTATION_QUERY,
+        request_id: '123',
         vc_id: 'urn:uuid:18b8e91b-381c-4686-a096-4c66c153bb69',
         requester_did: 'did:key:5678',
         limit_hbar: 0,
