@@ -2,8 +2,12 @@ import { Timestamp, TopicMessage, TransactionId } from '@hashgraph/sdk';
 import Long from 'long';
 import { jsonToBase64 } from '../../src/util/encoders.js';
 
-export const createTopicMessage = (json: any, sequenceNo = 100) => {
-  const consensusTimestamp = Timestamp.fromDate(new Date());
+export const createTopicMessage = (
+  json: any,
+  sequenceNo = 100,
+  timestamp?: Timestamp
+) => {
+  const consensusTimestamp = timestamp ?? Timestamp.fromDate(new Date());
   const sequenceNumber = new Long(sequenceNo);
 
   return {

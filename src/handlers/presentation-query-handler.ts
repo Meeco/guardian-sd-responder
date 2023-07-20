@@ -34,7 +34,7 @@ export class PresentationQueryHandler
 
     if (!vc_id || !requester_did || !request_id) {
       this.logger?.error(
-        `Message "${message.sequenceNumber}" did not contain the required parameters for "${this.operation}"`
+        `Message "${message.consensusTimestamp}" did not contain the required parameters for "${this.operation}"`
       );
       return;
     }

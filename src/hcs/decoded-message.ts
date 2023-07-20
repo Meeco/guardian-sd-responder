@@ -29,7 +29,7 @@ export class DecodedMessage<T = { [key: string]: any }> {
       );
     } catch (error) {
       logger?.error(
-        `Failed to decode message "${message.sequenceNumber}" as JSON - it will be ignored`,
+        `Failed to decode message "${message.consensusTimestamp}" as JSON - it will be ignored`,
         error
       );
     }

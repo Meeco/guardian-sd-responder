@@ -44,7 +44,7 @@ export class PresentationRequestHandler
 
     const { recipient_did, request_file_id, request_id } =
       message.contents as PresentationRequestMessage;
-    const challenge = message.sequenceNumber.toString();
+    const challenge = message.consensusTimestamp.toString();
 
     if (recipient_did !== this.responderDid) {
       this.logger?.verbose(

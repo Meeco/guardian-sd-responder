@@ -55,7 +55,7 @@ describe('decodeMessage', () => {
     );
     expect(decoded).toBeNull();
     expect(logger.error).toHaveBeenCalledWith(
-      'Failed to decode message "100200" as JSON - it will be ignored',
+      `Failed to decode message "${consensusTimestamp.toString()}" as JSON - it will be ignored`,
       expect.anything()
     );
   });

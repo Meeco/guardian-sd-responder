@@ -1,3 +1,4 @@
+import { Timestamp } from '@hashgraph/sdk';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { Logger } from 'winston';
 import { PresentationRequestHandler } from '../../src/handlers/presentation-request-handler.js';
@@ -378,6 +379,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   it('composes a presentation with derived proof, writes it to hfs and responds with hcs message', async () => {
+    const timestamp = Timestamp.fromDate(new Date());
     const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage(
         {
@@ -387,7 +389,8 @@ describe('PresentationRequestHandler', () => {
           request_file_dek_encrypted_base64: '',
           request_file_public_key_id: '',
         },
-        501
+        501,
+        timestamp
       ),
       '0.0.1234'
     )!;
@@ -423,7 +426,7 @@ describe('PresentationRequestHandler', () => {
     expect(bbsBls.preparePresentation).toHaveBeenCalledWith(
       presentationDefinition,
       selectiveCredential,
-      '501' // sequence no of the message
+      timestamp.toString() // consensus timestamp of the message is the challenge
     );
     expect(writer.writeFile).toHaveBeenCalledWith(JSON.stringify(presentation));
     expect(messenger.send).toHaveBeenCalledWith({

@@ -1,3 +1,4 @@
+import { Timestamp } from '@hashgraph/sdk';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { Logger } from 'winston';
 import { PresentationQueryHandler } from '../../src/handlers/presentation-query-handler.js';
@@ -61,22 +62,31 @@ describe('PresentationQueryHandler', () => {
   });
 
   it('does not respond to messages that are missing required parameters', async () => {
+    const timestamp = Timestamp.fromDate(new Date());
     registry.canHandleCredential.mockResolvedValue(false);
 
     const messageA = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
-      createTopicMessage({
-        operation: MessageType.PRESENTATION_QUERY,
-        vc_id: 'urn:uuid:18b8e91b-381c-4686-a096-4c66c153bb69',
-        limit_hbar: 0,
-      }),
+      createTopicMessage(
+        {
+          operation: MessageType.PRESENTATION_QUERY,
+          vc_id: 'urn:uuid:18b8e91b-381c-4686-a096-4c66c153bb69',
+          limit_hbar: 0,
+        },
+        100,
+        timestamp
+      ),
       '0.0.1234'
     )!;
     const messageB = DecodedMessage.fromTopicMessage<PresentationQueryMessage>(
-      createTopicMessage({
-        operation: MessageType.PRESENTATION_QUERY,
-        responder_did: 'did:key:1234',
-        limit_hbar: 0,
-      }),
+      createTopicMessage(
+        {
+          operation: MessageType.PRESENTATION_QUERY,
+          responder_did: 'did:key:1234',
+          limit_hbar: 0,
+        },
+        100,
+        timestamp
+      ),
       '0.0.1234'
     )!;
 
@@ -88,7 +98,7 @@ describe('PresentationQueryHandler', () => {
 
     expect(logger.error).toHaveBeenCalledTimes(2);
     expect(logger.error).toHaveBeenCalledWith(
-      'Message "100" did not contain the required parameters for "presentation-query"'
+      `Message "${timestamp.toString()}" did not contain the required parameters for "presentation-query"`
     );
   });
 
