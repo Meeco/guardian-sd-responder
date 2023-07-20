@@ -31,6 +31,47 @@ export class PexDocumentLoader {
     const [protocol] = url.split(':');
     const cacheKey = `${this.cachePrefix}:${url}`;
 
+    if (
+      url ===
+      'https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz'
+    ) {
+      return this.wrapResponse(url, {
+        '@context': {
+          '@version': 1.1,
+          '@protected': true,
+          name: 'http://schema.org/name',
+          description: 'http://schema.org/description',
+          identifier: 'http://schema.org/identifier',
+          auditor_template: {
+            '@id': 'https://example-credentials.org#auditor_template',
+            '@context': {
+              '@version': 1.1,
+              '@protected': true,
+              id: '@id',
+              type: '@type',
+              schema: 'http://schema.org/',
+              given_name: {
+                '@id': 'custom:given_name',
+                '@type': 'schema:text',
+              },
+              member_id: {
+                '@id': 'custom:member_id',
+                '@type': 'schema:text',
+              },
+              member_since: {
+                '@id': 'custom:member_since',
+                '@type': 'schema:text',
+              },
+              valid_until: {
+                '@id': 'custom:valid_until',
+                '@type': 'schema:text',
+              },
+            },
+          },
+        },
+      });
+    }
+
     const cached = await this.storage.read(cacheKey);
     if (cached) {
       this.logger?.verbose(`Return cached result for "${url}"`);

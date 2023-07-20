@@ -11,9 +11,11 @@ import { HfsReader } from '../../src/hfs/hfs-reader.js';
 import { HfsWriter } from '../../src/hfs/hfs-writer.js';
 import { BbsBlsService } from '../../src/vc/bbs-bls-service.js';
 import { CredentialRegistry } from '../../src/vc/credential-registry.js';
+import { PresentationVerifier } from '../../src/vc/presentation-verifier.js';
 import { SpyObject, createSpyObject } from '../fixtures/create-spy-object.js';
 import { createTopicMessage } from '../fixtures/create-topic-message.js';
 import {
+  authorizationDetails,
   credential,
   credentialId,
   presentationDefinition,
@@ -28,6 +30,7 @@ describe('PresentationRequestHandler', () => {
   let registry: SpyObject<CredentialRegistry>;
   let bbsBls: SpyObject<BbsBlsService>;
   let logger: SpyObject<Logger>;
+  let verifier: SpyObject<PresentationVerifier>;
 
   const responderDid = 'did:key:1234';
 
@@ -47,6 +50,7 @@ describe('PresentationRequestHandler', () => {
     registry = createSpyObject();
     bbsBls = createSpyObject();
     logger = createSpyObject();
+    verifier = createSpyObject();
     handler = new PresentationRequestHandler(
       responderDid,
       reader,
@@ -54,6 +58,7 @@ describe('PresentationRequestHandler', () => {
       messenger,
       registry,
       bbsBls,
+      verifier,
       logger
     );
   });
@@ -102,6 +107,76 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).not.toHaveBeenCalled();
   });
 
+  it('send an error if presentation is of a credential from an untrusted issuer', async () => {
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    reader.readFileAsJson.mockResolvedValue({
+      authorization_details: {
+        did: 'did:key:4567',
+        presentationDefinition,
+        verifiablePresentation: authorizationDetails.verifiablePresentation,
+      },
+      presentation_definition: {},
+    });
+    verifier.isTrusted.mockResolvedValue(false);
+    verifier.verify.mockResolvedValue(false);
+
+    await handler.handle(message);
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:4567',
+        error: {
+          code: 'UNTRUSTED_ISSUER',
+          message: `Issuer "did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL" is not a trusted issuer.`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('send an error presentations that can not be verified', async () => {
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    reader.readFileAsJson.mockResolvedValue({
+      authorization_details: {
+        did: 'did:key:4567',
+        presentationDefinition,
+        verifiablePresentation: authorizationDetails.verifiablePresentation,
+      },
+      presentation_definition: {},
+    });
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(false);
+
+    await handler.handle(message);
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:4567',
+        error: {
+          code: 'INVALID_PRESENTATION',
+          message: `Presentation could not be verified.`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
   it('send an error for requests that do not have a valid credential id', async () => {
     const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
@@ -114,9 +189,13 @@ describe('PresentationRequestHandler', () => {
     reader.readFileAsJson.mockResolvedValue({
       authorization_details: {
         did: 'did:key:4567',
+        presentationDefinition,
+        verifiablePresentation: authorizationDetails.verifiablePresentation,
       },
       presentation_definition: {},
     });
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
 
@@ -154,9 +233,13 @@ describe('PresentationRequestHandler', () => {
     reader.readFileAsJson.mockResolvedValue({
       authorization_details: {
         did: 'did:key:4567',
+        presentationDefinition,
+        verifiablePresentation: authorizationDetails.verifiablePresentation,
       },
       presentation_definition: presentationDefinition,
     });
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(true);
     registry.fetchCredential.mockRejectedValue(new Error('Test error'));
 
     await handler.handle(message);
@@ -197,6 +280,8 @@ describe('PresentationRequestHandler', () => {
     const presentation = {
       authorization_details: {
         did: 'did:key:request_did',
+        presentationDefinition,
+        verifiablePresentation: authorizationDetails.verifiablePresentation,
       },
       presentation: selectiveCredential,
     };
@@ -212,6 +297,9 @@ describe('PresentationRequestHandler', () => {
     writer.writeFile.mockResolvedValue(null);
     bbsBls.createProof.mockResolvedValue(selectiveCredential);
     bbsBls.preparePresentation.mockResolvedValue(presentation);
+
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
 
@@ -250,6 +338,8 @@ describe('PresentationRequestHandler', () => {
     )!;
     const presentation = {
       presentation: selectiveCredential,
+      presentationDefinition,
+      verifiablePresentation: authorizationDetails.verifiablePresentation,
     };
 
     reader.readFileAsJson.mockResolvedValue({
@@ -263,6 +353,9 @@ describe('PresentationRequestHandler', () => {
     writer.writeFile.mockRejectedValue(new Error('Test error'));
     bbsBls.createProof.mockResolvedValue(selectiveCredential);
     bbsBls.preparePresentation.mockResolvedValue(presentation);
+
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
 
@@ -304,9 +397,7 @@ describe('PresentationRequestHandler', () => {
 
     reader.readFileAsJson.mockResolvedValue({
       presentation_definition: presentationDefinition,
-      authorization_details: {
-        did: 'did:key:request_did',
-      },
+      authorization_details: authorizationDetails,
     });
     registry.fetchCredential.mockResolvedValue(credential);
     messenger.send.mockResolvedValue(null);
@@ -317,6 +408,9 @@ describe('PresentationRequestHandler', () => {
     });
     bbsBls.createProof.mockResolvedValue(selectiveCredential);
     bbsBls.preparePresentation.mockResolvedValue(presentation);
+
+    verifier.isTrusted.mockResolvedValue(true);
+    verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
 
@@ -335,12 +429,19 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:request_did',
+        recipient_did: authorizationDetails.did,
         response_file_dek_encrypted_base64: '',
         response_file_id: '0.0.5432',
       }),
       topicId: '0.0.1234',
     });
     expect(logger.error).not.toHaveBeenCalled();
+
+    expect(verifier.isTrusted).toHaveBeenCalledWith(
+      'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL'
+    );
+    expect(verifier.verify).toHaveBeenCalledWith(
+      authorizationDetails.verifiablePresentation
+    );
   });
 });

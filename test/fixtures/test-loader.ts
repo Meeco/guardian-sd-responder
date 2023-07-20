@@ -1,13 +1,18 @@
 import { fetchJson } from '../../src/util/fetch-json.js';
-import didDoc from './contexts/did-doc.json';
+import { ffc, sel, z6m } from './contexts/did-docs.js';
 import exampleCredentialContext from './contexts/example-credential-context.json';
 
 // Pre-cached test items
 const loaderCache: any = {
-  'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0':
-    didDoc,
+  'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL': sel,
+  'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL#z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL':
+    sel,
+  'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1': z6m,
+  'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1#z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1':
+    z6m,
+  'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0': ffc,
   'did:hedera:testnet:FfcjotQh3MX6D8V97Yzvw3a1GupeV6kBjksviKraL75L_0.0.0#did-root-key-bbs':
-    didDoc,
+    ffc,
   'https://ipfs.io/ipfs/QmYmAKqchE8J6feEEKwqZeJwSrC6NRQsCHx2dBs8Vs7ECe':
     exampleCredentialContext,
 };
@@ -32,8 +37,10 @@ const acceptedUrls = [
   'https://w3id.org/security/suites/jws-2020/v1',
   'https://w3id.org/security/v1',
   'https://w3id.org/security/v2',
+  'https://www.w3.org/2018/credentials/examples/v1',
   'https://www.w3.org/2018/credentials/v1',
   'https://www.w3.org/ns/did/v1',
+  'https://www.w3.org/ns/odrl.jsonld',
 ];
 
 export const testLoader = async (documentUrl: string) => {

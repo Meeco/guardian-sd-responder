@@ -31,7 +31,7 @@ export declare type DocumentLoader = (iri: string) => Promise<{
 export interface VerifiablePresentation extends LinkedDataDocument {
   type: Type;
   holder?: Holder;
-  verifiableCredential?: any;
+  verifiableCredential?: VerifiableCredential | VerifiableCredential[];
   proof?: any;
   [x: string]: any;
 }

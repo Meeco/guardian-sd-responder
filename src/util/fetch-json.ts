@@ -5,11 +5,7 @@ import { log } from './logger.js';
  * (requires node > 18)
  */
 export async function fetchJson<T = any>(url: string) {
-  return fetch(url, {
-    headers: {
-      accept: 'application/json',
-    },
-  })
+  return fetch(url)
     .then((result) => {
       if (result.ok) {
         return result.json() as Promise<T>;
