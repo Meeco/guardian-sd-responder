@@ -12,8 +12,8 @@ import { HfsWriter } from '../hfs/hfs-writer.js';
 import { BbsBlsService, VerifiableCredential } from '../vc/bbs-bls-service.js';
 import { CredentialRegistry } from '../vc/credential-registry.js';
 import { PresentationRequest } from '../vc/presentation-request.js';
+import { PresentationVerifier } from '../vc/presentation-verifier.js';
 import { Handler } from './handler.js';
-
 /**
  * Processes presentation request messages, only if they are addressed to this
  * responder's DID (via recipient_idd in the message).
@@ -35,6 +35,7 @@ export class PresentationRequestHandler
     private readonly hcsMessenger: HcsMessenger,
     private readonly registry: CredentialRegistry,
     private readonly bbsBlsService: BbsBlsService,
+    private readonly verifier: PresentationVerifier,
     protected readonly logger?: Logger
   ) {}
 
@@ -43,7 +44,7 @@ export class PresentationRequestHandler
 
     const { recipient_did, request_file_id, request_id } =
       message.contents as PresentationRequestMessage;
-    const challenge = message.sequenceNumber.toString();
+    const challenge = message.consensusTimestamp.toString();
 
     if (recipient_did !== this.responderDid) {
       this.logger?.verbose(
@@ -70,6 +71,44 @@ export class PresentationRequestHandler
         `Request authorization did not contain a did - ignoring request`
       );
       return;
+    }
+
+    const { verifiablePresentation } = authorization_details;
+
+    const credentials = Array.isArray(
+      verifiablePresentation?.verifiableCredential
+    )
+      ? verifiablePresentation?.verifiableCredential
+      : [verifiablePresentation?.verifiableCredential];
+
+    for (const credential of credentials) {
+      const issuer = (credential?.issuer as any)?.id ?? credential?.issuer;
+
+      const isTrusted = await this.verifier.isTrusted(issuer);
+      if (!isTrusted) {
+        return this.sendErrorResponse({
+          request_id,
+          recipient_did: authorization_details.did,
+          topicId: message.topicId,
+          error: {
+            code: 'UNTRUSTED_ISSUER',
+            message: `Issuer "${issuer}" is not a trusted issuer.`,
+          },
+        });
+      }
+    }
+
+    const verified = await this.verifier.verify(verifiablePresentation);
+    if (!verified) {
+      return this.sendErrorResponse({
+        request_id,
+        recipient_did: authorization_details.did,
+        topicId: message.topicId,
+        error: {
+          code: 'INVALID_PRESENTATION',
+          message: `Presentation could not be verified.`,
+        },
+      });
     }
 
     try {

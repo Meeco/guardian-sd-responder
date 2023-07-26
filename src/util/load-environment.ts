@@ -11,6 +11,7 @@ import {
   Ed25519VerificationKey2020Key,
   PresentationSigner,
 } from '../vc/presentation-signer.js';
+import { PresentationVerifierDigitalBazaar } from '../vc/presentation-verifier-digitalbazaar.js';
 import { fetchIPFSFile } from './ipfs-fetch.js';
 import { LmdbStorage } from './key-value-storage.js';
 import { log } from './logger.js';
@@ -141,6 +142,11 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
 
   const registry = new CredentialRegistry(storage, fetchIPFSFile, log);
 
+  const verifier = new PresentationVerifierDigitalBazaar(
+    documentLoader.loader,
+    log
+  );
+
   return {
     messenger,
     storage,
@@ -150,5 +156,6 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
     writer,
     registry,
     client,
+    verifier,
   };
 };

@@ -110,6 +110,49 @@ export const presentationDefinition: PresentationDefinitionV2 = {
   ],
 };
 
+export const authorizationDetails = {
+  did: 'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1',
+  verifiablePresentation: {
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    type: ['VerifiablePresentation'],
+    verifiableCredential: [
+      {
+        '@context': [
+          'https://www.w3.org/2018/credentials/v1',
+          'https://www.w3.org/2018/credentials/examples/v1',
+        ],
+        id: 'http://example.edu/credentials/1872',
+        type: ['VerifiableCredential', 'AlumniCredential'],
+        issuer: 'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
+        issuanceDate: '2010-01-01T19:23:24Z',
+        credentialSubject: {
+          id: 'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1',
+          alumniOf: '<span lang="en">Example University</span>',
+        },
+        proof: {
+          type: 'Ed25519Signature2018',
+          created: '2023-07-20T07:02:33Z',
+          verificationMethod:
+            'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL#z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
+          proofPurpose: 'assertionMethod',
+          jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..ZJW9pYnrW1Hs4ftgFVHaD9GG5EH6-QY9mQhXh5VBIndwQnbWUprSQJLrBxpzElgBwvES1AmyC1V9PLnZMBFpBw',
+        },
+      },
+    ],
+    id: 'urn:uuid:d9c3b226-1758-4679-bcda-2d7a1ed2c579',
+    holder: 'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
+    proof: {
+      type: 'Ed25519Signature2018',
+      created: '2023-07-20T07:02:35Z',
+      verificationMethod:
+        'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1#z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1',
+      proofPurpose: 'authentication',
+      challenge: 'challenge',
+      jws: 'eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..UyXbH6ecHxFYi1dLhMbJKj6rlxMfWT7qxaAKfMQMx3EMNnl4k3DCAIMzjZO7mhOyWtcrxr3Mo9YQJw_zw0_AAw',
+    },
+  },
+};
+
 export const presentation = {
   '@context': [
     'https://www.w3.org/2018/credentials/v1',
