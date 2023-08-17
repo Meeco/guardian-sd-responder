@@ -1,5 +1,6 @@
 import { Logger } from 'winston';
 import { DecodedMessage } from '../hcs/decoded-message.js';
+import { HcsEncryption } from '../hcs/hcs-encryption.js';
 import { HcsMessenger } from '../hcs/hcs-messenger.js';
 import {
   MessageType,
@@ -21,6 +22,7 @@ export class PresentationQueryHandler
     private readonly responderDid: string,
     private readonly hcsMessenger: HcsMessenger,
     private readonly registry: CredentialRegistry,
+    private readonly encryption: HcsEncryption,
     protected readonly logger?: Logger
   ) {}
 
@@ -49,6 +51,9 @@ export class PresentationQueryHandler
       operation: MessageType.QUERY_RESPONSE,
       request_id,
       responder_did: this.responderDid,
+      response_ephem_public_key: Buffer.from(
+        this.encryption.publicKey
+      ).toString('base64'),
       offer_hbar: 0,
     };
 

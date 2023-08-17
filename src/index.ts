@@ -35,6 +35,7 @@ const queryHandler = new PresentationQueryHandler(
   responderDid,
   messenger,
   registry,
+  hcsEncryption,
   log
 );
 

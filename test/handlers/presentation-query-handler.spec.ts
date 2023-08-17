@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import { Logger } from 'winston';
 import { PresentationQueryHandler } from '../../src/handlers/presentation-query-handler.js';
 import { DecodedMessage } from '../../src/hcs/decoded-message.js';
+import { HcsEncryption } from '../../src/hcs/hcs-encryption.js';
 import { HcsMessenger } from '../../src/hcs/hcs-messenger.js';
 import {
   MessageType,
@@ -16,17 +17,22 @@ describe('PresentationQueryHandler', () => {
   let messenger: SpyObject<HcsMessenger>;
   let logger: SpyObject<Logger>;
   let registry: SpyObject<CredentialRegistry>;
+  let encryption: SpyObject<HcsEncryption>;
   let handler: PresentationQueryHandler;
 
   beforeEach(() => {
     messenger = createSpyObject();
     logger = createSpyObject();
     registry = createSpyObject();
+    encryption = createSpyObject();
+
+    (encryption as any)['publicKey'] = 'example-public';
 
     handler = new PresentationQueryHandler(
       'did:key:1234',
       messenger as HcsMessenger,
       registry as CredentialRegistry,
+      encryption as HcsEncryption,
       logger as Logger
     );
   });
@@ -55,6 +61,7 @@ describe('PresentationQueryHandler', () => {
         operation: MessageType.QUERY_RESPONSE,
         request_id: '123',
         responder_did: 'did:key:1234',
+        response_ephem_public_key: 'ZXhhbXBsZS1wdWJsaWM=', // 'example-public' in base64
         offer_hbar: 0,
       }),
       topicId: '0.0.1234',
