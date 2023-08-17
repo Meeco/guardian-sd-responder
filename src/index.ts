@@ -23,10 +23,11 @@ const {
 await registry.registerCredential(
   {
     operation: MessageType.REGISTER_CREDENTIAL,
-    vc_id: `urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9`,
+    vc_id: `urn:uuid:6871fc25-0b80-421c-ae1a-457107a6aadf`,
     encrypted_passphrase:
-      'Aes256Gcm.lESQoX90KLyB4FM8kKnW1tYmsPI9P9Ma3RPQhqYz21Q=.QUAAAAAFaXYADAAAAABGLi4kytbeaqKAuHIFYXQAEAAAAABTNaI2LuYsHWFl97TN91bQAmFkAAUAAABub25lAAA=',
-    ipfs_cid: 'QmNxHdP8EoKQTqLDZtVijv66aeGKsxGEPwCz4AMkj2AExZ',
+      'Aes256Gcm.8Kf9-zWPULg3J6iVAUognXQA83dIJkQxo9TMhUGbVA3CGiecz_UcaSq8-uKOcNMh.QUAAAAAFaXYADAAAAAADR7iLcRA0X44LFDwFYXQAEAAAAABhkFEy3_TaQIQHrzBuAWrBAmFkAAUAAABub25lAAA=',
+    ipfs_cid:
+      'bafybeigezd7mkdwfmcj3awnsf6hix6xyetxnq4lbund5yndq7fqho3t6hy/6871fc25-0b80-421c-ae1a-457107a6aadf',
   },
   EncryptionKey.fromBytes(Buffer.from(passphraseEncryptionKeyHex, 'hex'))
 );
