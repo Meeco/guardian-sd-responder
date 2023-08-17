@@ -9,8 +9,16 @@ import { log } from './util/logger.js';
 const environment = loadEnvironment();
 const { responderTopicsIds, responderDid, passphraseEncryptionKeyHex } =
   environment;
-const { client, registry, messenger, reader, writer, bbsBlsService, verifier } =
-  createServices(environment);
+const {
+  client,
+  registry,
+  messenger,
+  reader,
+  writer,
+  bbsBlsService,
+  verifier,
+  hcsEncryption,
+} = createServices(environment);
 
 await registry.registerCredential(
   {
@@ -38,6 +46,7 @@ const requestHandler = new PresentationRequestHandler(
   registry,
   bbsBlsService,
   verifier,
+  hcsEncryption,
   log
 );
 

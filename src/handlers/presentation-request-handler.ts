@@ -1,6 +1,7 @@
 import { FieldV2 } from '@sphereon/pex-models';
 import { Logger } from 'winston';
 import { DecodedMessage } from '../hcs/decoded-message.js';
+import { HcsEncryption } from '../hcs/hcs-encryption.js';
 import { HcsMessenger } from '../hcs/hcs-messenger.js';
 import {
   MessageType,
@@ -36,14 +37,20 @@ export class PresentationRequestHandler
     private readonly registry: CredentialRegistry,
     private readonly bbsBlsService: BbsBlsService,
     private readonly verifier: PresentationVerifier,
+    private readonly encryption: HcsEncryption,
     protected readonly logger?: Logger
   ) {}
 
   async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { recipient_did, request_file_id, request_id } =
-      message.contents as PresentationRequestMessage;
+    const {
+      recipient_did,
+      request_file_id,
+      request_id,
+      request_file_nonce,
+      request_ephem_public_key,
+    } = message.contents as PresentationRequestMessage;
     const challenge = message.consensusTimestamp.toString();
 
     if (recipient_did !== this.responderDid) {
@@ -58,9 +65,47 @@ export class PresentationRequestHandler
     }
 
     this.logger?.verbose(`Fetch request file "${request_file_id}"`);
-    const presentationRequest = (await this.reader.readFileAsJson(
-      request_file_id
-    )) as PresentationRequest;
+    const contents = await this.reader.readFile(request_file_id);
+
+    this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
+    let decrypted: Uint8Array;
+
+    try {
+      decrypted = this.encryption.decrypt(
+        contents,
+        request_file_nonce,
+        request_ephem_public_key
+      );
+      this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
+    } catch (err) {
+      return this.sendErrorResponse({
+        request_id,
+        topicId: message.topicId,
+        error: {
+          code: 'FILE_DECRYPTION_FAILED',
+          message: `Unable to decrypt the request file.`,
+        },
+      });
+    }
+    let presentationRequest: PresentationRequest;
+
+    this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
+
+    try {
+      presentationRequest = JSON.parse(
+        Buffer.from(decrypted).toString('utf-8')
+      ) as PresentationRequest;
+    } catch (err) {
+      return this.sendErrorResponse({
+        request_id,
+        topicId: message.topicId,
+        error: {
+          code: 'FILE_PARSE_FAILED',
+          message: `Unable to parse the request file as valid json.`,
+        },
+      });
+    }
+
     this.logger?.debug(presentationRequest);
 
     const { authorization_details, presentation_definition } =
@@ -132,7 +177,7 @@ export class PresentationRequestHandler
           topicId: message.topicId,
           error: {
             code: 'MISSING_CREDENTIAL_ID',
-            message: `Unable to determine credential ID from request. It will be ignored`,
+            message: `Unable to determine credential ID from request.`,
           },
         });
       }
@@ -170,10 +215,18 @@ export class PresentationRequestHandler
         challenge
       );
 
-      this.logger?.verbose('Write presentation to HFS');
-      const fileId = await this.writer.writeFile(
-        JSON.stringify(signedPresentation)
+      this.logger?.verbose('Encrypt presentation');
+      const response_file_nonce = Buffer.from(
+        this.encryption.generateNonce()
+      ).toString('base64');
+      const encryptedResponse = this.encryption.encrypt(
+        Buffer.from(JSON.stringify(signedPresentation), 'utf-8'),
+        response_file_nonce,
+        request_ephem_public_key
       );
+
+      this.logger?.verbose('Write encrypted presentation to HFS');
+      const fileId = await this.writer.writeFile(encryptedResponse);
 
       if (!fileId) {
         throw new Error(
@@ -185,7 +238,10 @@ export class PresentationRequestHandler
         operation: MessageType.PRESENTATION_RESPONSE,
         request_id,
         recipient_did: authorization_details.did,
-        response_file_dek_encrypted_base64: '',
+        response_ephem_public_key: Buffer.from(
+          this.encryption.publicKey
+        ).toString('base64'),
+        response_file_nonce,
         response_file_id: fileId.toString(),
       };
 
@@ -218,7 +274,7 @@ export class PresentationRequestHandler
     topicId,
     error,
   }: {
-    recipient_did: string;
+    recipient_did?: string;
     request_id: string;
     topicId: string;
     error: { code: string; message: string };

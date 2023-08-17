@@ -1,5 +1,6 @@
 import { Client, Hbar, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import bs58 from 'bs58';
+import { HcsEncryption } from '../hcs/hcs-encryption.js';
 import { HcsMessenger } from '../hcs/hcs-messenger.js';
 import { HfsReader } from '../hfs/hfs-reader.js';
 import { HfsWriter } from '../hfs/hfs-writer.js';
@@ -22,6 +23,7 @@ interface EnvironmentConfiguration {
   responderDid: string;
   responderTopicsIds: string[];
   passphraseEncryptionKeyHex: string;
+  hederaEncryptionPrivateKeyHex: string;
   responderPublicKey: PublicKey;
   responderPrivateKey: PrivateKey;
   responderKeyDetails:
@@ -46,6 +48,7 @@ export const loadEnvironment = (
   const responderPrivateKeyHex = env.RESPONDER_DID_PRIVATE_KEY_HEX;
 
   const passphraseEncryptionKeyHex = env.PASSPHRASE_ENCRYPTION_KEY_HEX;
+  const hederaEncryptionPrivateKeyHex = env.HEDERA_ENCRYPTION_PRIVATE_KEY_HEX;
 
   if (!accountId || !accountPrivateKey) {
     throw new Error(
@@ -79,6 +82,12 @@ export const loadEnvironment = (
     );
   }
 
+  if (!hederaEncryptionPrivateKeyHex) {
+    throw new Error(
+      'Environment variable HEDERA_ENCRYPTION_PRIVATE_KEY_HEX must be present'
+    );
+  }
+
   const responderPublicKey = PublicKey.fromString(responderPublicKeyHex);
   const responderPrivateKey = PrivateKey.fromString(responderPrivateKeyHex);
 
@@ -90,6 +99,7 @@ export const loadEnvironment = (
     responderPublicKey,
     responderPrivateKey,
     passphraseEncryptionKeyHex,
+    hederaEncryptionPrivateKeyHex,
     responderKeyDetails: {
       id: `${responderDid}#${responderKeyId}`,
       controller: responderDid,
@@ -116,6 +126,7 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
     responderPublicKey,
     responderPrivateKey,
     responderKeyDetails,
+    hederaEncryptionPrivateKeyHex,
   } = configuration;
   const client = _createHederaClient(accountId, accountPrivateKey);
 
@@ -147,6 +158,8 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
     log
   );
 
+  const hcsEncryption = new HcsEncryption(hederaEncryptionPrivateKeyHex);
+
   return {
     messenger,
     storage,
@@ -157,5 +170,6 @@ export const createServices = (configuration: EnvironmentConfiguration) => {
     registry,
     client,
     verifier,
+    hcsEncryption,
   };
 };

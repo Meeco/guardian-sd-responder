@@ -16,7 +16,7 @@ export class HfsReader {
     return Buffer.from(contents).toString('utf-8');
   }
 
-  private readFile(fileId: string) {
+  public readFile(fileId: string) {
     return new FileContentsQuery()
       .setFileId(fileId)
       .setMaxAttempts(2)

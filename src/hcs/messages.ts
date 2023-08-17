@@ -35,24 +35,33 @@ export interface PresentationRequestMessage {
   request_id: string;
   recipient_did: string;
   request_file_id: string;
-  request_file_dek_encrypted_base64: string;
-  request_file_public_key_id: string;
+  request_file_nonce: string;
+  request_ephem_public_key: string;
+  version: string;
 }
+
+type SuccessResponse = {
+  operation: MessageType.PRESENTATION_RESPONSE;
+  request_id: string;
+  recipient_did: string;
+  response_file_id: string;
+  response_file_nonce: string;
+  response_ephem_public_key: string;
+};
+
+type ErrorResponse = {
+  operation: MessageType.PRESENTATION_RESPONSE;
+  request_id: string;
+  error: {
+    code: string;
+    message: string;
+  };
+};
 
 /**
  * A message from a PEx responder to a verifier fulfilling a presentation request
  */
-export interface PresentationResponseMessage {
-  operation: MessageType.PRESENTATION_RESPONSE;
-  request_id: string;
-  recipient_did: string;
-  response_file_id?: string;
-  response_file_dek_encrypted_base64?: string;
-  error?: {
-    code: string;
-    message: string;
-  };
-}
+export type PresentationResponseMessage = SuccessResponse | ErrorResponse;
 
 export interface RegisterCredentialMessage {
   operation: MessageType.REGISTER_CREDENTIAL;

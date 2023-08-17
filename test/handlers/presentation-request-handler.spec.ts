@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import { Logger } from 'winston';
 import { PresentationRequestHandler } from '../../src/handlers/presentation-request-handler.js';
 import { DecodedMessage } from '../../src/hcs/decoded-message.js';
+import { HcsEncryption } from '../../src/hcs/hcs-encryption.js';
 import { HcsMessenger } from '../../src/hcs/hcs-messenger.js';
 import {
   MessageType,
@@ -32,6 +33,7 @@ describe('PresentationRequestHandler', () => {
   let bbsBls: SpyObject<BbsBlsService>;
   let logger: SpyObject<Logger>;
   let verifier: SpyObject<PresentationVerifier>;
+  let encryption: SpyObject<HcsEncryption>;
 
   const responderDid = 'did:key:1234';
 
@@ -52,6 +54,7 @@ describe('PresentationRequestHandler', () => {
     bbsBls = createSpyObject();
     logger = createSpyObject();
     verifier = createSpyObject();
+    encryption = createSpyObject();
     handler = new PresentationRequestHandler(
       responderDid,
       reader,
@@ -60,9 +63,23 @@ describe('PresentationRequestHandler', () => {
       registry,
       bbsBls,
       verifier,
+      encryption,
       logger
     );
+
+    encryption.encrypt.mockImplementation(
+      (data) => `encrypted:${Buffer.from(data).toString('utf-8')}`
+    );
+    encryption.generateNonce.mockReturnValue(
+      Buffer.from('example-nonce', 'utf-8')
+    );
+    (encryption as any)['publicKey'] = Buffer.from('example-public', 'utf-8');
   });
+
+  function mockDecryptedFileResponse(response: any) {
+    reader.readFile.mockResolvedValue(`encrypted:data`);
+    encryption.decrypt.mockReturnValue(response);
+  }
 
   it('ignores requests not intended for the given responder did', async () => {
     const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
@@ -81,7 +98,7 @@ describe('PresentationRequestHandler', () => {
         responder_did: 'did:key:1234',
       }
     );
-    expect(reader.readFileAsJson).not.toHaveBeenCalled();
+    expect(reader.readFile).not.toHaveBeenCalled();
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).not.toHaveBeenCalled();
@@ -96,16 +113,71 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFileAsJson.mockResolvedValue({
-      presentation_definition: {},
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        presentation_definition: {},
+      })
+    );
+
+    await handler.handle(message);
+
+    expect(reader.readFile).toHaveBeenCalledWith('0.0.1234');
+    expect(registry.fetchCredential).not.toHaveBeenCalled();
+    expect(bbsBls.createProof).not.toHaveBeenCalled();
+    expect(messenger.send).not.toHaveBeenCalled();
+  });
+
+  it('send an error if request can not be decrypted', async () => {
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    reader.readFile.mockResolvedValue(Buffer.from([0]));
+    encryption.decrypt.mockImplementation(() => {
+      throw new Error('Decryption failed');
     });
 
     await handler.handle(message);
 
-    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
-    expect(registry.fetchCredential).not.toHaveBeenCalled();
-    expect(bbsBls.createProof).not.toHaveBeenCalled();
-    expect(messenger.send).not.toHaveBeenCalled();
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        error: {
+          code: 'FILE_DECRYPTION_FAILED',
+          message: `Unable to decrypt the request file.`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('send an error if decrypted file can not be parsed', async () => {
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    mockDecryptedFileResponse('not valid json');
+
+    await handler.handle(message);
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        error: {
+          code: 'FILE_PARSE_FAILED',
+          message: `Unable to parse the request file as valid json.`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
   });
 
   it('send an error if presentation is of a credential from an untrusted issuer', async () => {
@@ -117,14 +189,16 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFileAsJson.mockResolvedValue({
-      authorization_details: {
-        did: 'did:key:4567',
-        presentationDefinition,
-        verifiablePresentation: authorizationDetails.verifiablePresentation,
-      },
-      presentation_definition: {},
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        authorization_details: {
+          did: 'did:key:4567',
+          presentationDefinition,
+          verifiablePresentation: authorizationDetails.verifiablePresentation,
+        },
+        presentation_definition: {},
+      })
+    );
     verifier.isTrusted.mockResolvedValue(false);
     verifier.verify.mockResolvedValue(false);
 
@@ -152,14 +226,16 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFileAsJson.mockResolvedValue({
-      authorization_details: {
-        did: 'did:key:4567',
-        presentationDefinition,
-        verifiablePresentation: authorizationDetails.verifiablePresentation,
-      },
-      presentation_definition: {},
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        authorization_details: {
+          did: 'did:key:4567',
+          presentationDefinition,
+          verifiablePresentation: authorizationDetails.verifiablePresentation,
+        },
+        presentation_definition: {},
+      })
+    );
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(false);
 
@@ -187,23 +263,25 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFileAsJson.mockResolvedValue({
-      authorization_details: {
-        did: 'did:key:4567',
-        presentationDefinition,
-        verifiablePresentation: authorizationDetails.verifiablePresentation,
-      },
-      presentation_definition: {},
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        authorization_details: {
+          did: 'did:key:4567',
+          presentationDefinition,
+          verifiablePresentation: authorizationDetails.verifiablePresentation,
+        },
+        presentation_definition: {},
+      })
+    );
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
 
     expect(logger.error).toHaveBeenCalledWith(
-      `Unable to determine credential ID from request. It will be ignored`
+      `Unable to determine credential ID from request.`
     );
-    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
+    expect(reader.readFile).toHaveBeenCalledWith('0.0.1234');
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).toHaveBeenCalledWith({
@@ -212,7 +290,7 @@ describe('PresentationRequestHandler', () => {
         recipient_did: 'did:key:4567',
         error: {
           code: 'MISSING_CREDENTIAL_ID',
-          message: `Unable to determine credential ID from request. It will be ignored`,
+          message: `Unable to determine credential ID from request.`,
         },
       }),
       topicId: '0.0.1234',
@@ -231,14 +309,16 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFileAsJson.mockResolvedValue({
-      authorization_details: {
-        did: 'did:key:4567',
-        presentationDefinition,
-        verifiablePresentation: authorizationDetails.verifiablePresentation,
-      },
-      presentation_definition: presentationDefinition,
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        authorization_details: {
+          did: 'did:key:4567',
+          presentationDefinition,
+          verifiablePresentation: authorizationDetails.verifiablePresentation,
+        },
+        presentation_definition: presentationDefinition,
+      })
+    );
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(true);
     registry.fetchCredential.mockRejectedValue(new Error('Test error'));
@@ -248,7 +328,7 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).toHaveBeenCalledWith(
       `Unable to fetch the credential "${credentialId}". Request can not be handled`
     );
-    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.111');
+    expect(reader.readFile).toHaveBeenCalledWith('0.0.111');
     expect(registry.fetchCredential).toHaveBeenCalledWith(credentialId);
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).toHaveBeenCalledWith({
@@ -287,12 +367,14 @@ describe('PresentationRequestHandler', () => {
       presentation: selectiveCredential,
     };
 
-    reader.readFileAsJson.mockResolvedValue({
-      presentation_definition: presentationDefinition,
-      authorization_details: {
-        did: 'did:key:request_did',
-      },
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        presentation_definition: presentationDefinition,
+        authorization_details: {
+          did: 'did:key:request_did',
+        },
+      })
+    );
     registry.fetchCredential.mockResolvedValue(credential);
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockResolvedValue(null);
@@ -343,12 +425,14 @@ describe('PresentationRequestHandler', () => {
       verifiablePresentation: authorizationDetails.verifiablePresentation,
     };
 
-    reader.readFileAsJson.mockResolvedValue({
-      presentation_definition: presentationDefinition,
-      authorization_details: {
-        did: 'did:key:request_did',
-      },
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        presentation_definition: presentationDefinition,
+        authorization_details: {
+          did: 'did:key:request_did',
+        },
+      })
+    );
     registry.fetchCredential.mockResolvedValue(credential);
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockRejectedValue(new Error('Test error'));
@@ -386,8 +470,8 @@ describe('PresentationRequestHandler', () => {
           operation: MessageType.PRESENTATION_REQUEST,
           recipient_did: 'did:key:1234',
           request_file_id: '0.0.111',
-          request_file_dek_encrypted_base64: '',
-          request_file_public_key_id: '',
+          request_file_nonce: 'example-request-nonce', // this would be base64 in a real example
+          request_ephem_public_key: 'example-requestor-public', // this would be base64 in a real example
         },
         501,
         timestamp
@@ -398,10 +482,12 @@ describe('PresentationRequestHandler', () => {
       presentation: selectiveCredential,
     };
 
-    reader.readFileAsJson.mockResolvedValue({
-      presentation_definition: presentationDefinition,
-      authorization_details: authorizationDetails,
-    });
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        presentation_definition: presentationDefinition,
+        authorization_details: authorizationDetails,
+      })
+    );
     registry.fetchCredential.mockResolvedValue(credential);
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockResolvedValue({
@@ -417,7 +503,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
 
-    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.111');
+    expect(reader.readFile).toHaveBeenCalledWith('0.0.111');
     expect(registry.fetchCredential).toHaveBeenCalledWith(credentialId);
     expect(bbsBls.createProof).toHaveBeenCalledWith(
       credential,
@@ -428,12 +514,15 @@ describe('PresentationRequestHandler', () => {
       selectiveCredential,
       timestamp.toString() // consensus timestamp of the message is the challenge
     );
-    expect(writer.writeFile).toHaveBeenCalledWith(JSON.stringify(presentation));
+    expect(writer.writeFile).toHaveBeenCalledWith(
+      `encrypted:${JSON.stringify(presentation)}`
+    );
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
-        response_file_dek_encrypted_base64: '',
+        response_ephem_public_key: 'ZXhhbXBsZS1wdWJsaWM=', // 'example-public' in base64
+        response_file_nonce: 'ZXhhbXBsZS1ub25jZQ==', // 'example-nonce' in base64
         response_file_id: '0.0.5432',
       }),
       topicId: '0.0.1234',
@@ -445,6 +534,16 @@ describe('PresentationRequestHandler', () => {
     );
     expect(verifier.verify).toHaveBeenCalledWith(
       authorizationDetails.verifiablePresentation
+    );
+    expect(encryption.decrypt).toHaveBeenCalledWith(
+      'encrypted:data',
+      'example-request-nonce', // this would be base64 in a real example
+      'example-requestor-public' // this would be base64 in a real example
+    );
+    expect(encryption.encrypt).toHaveBeenCalledWith(
+      expect.anything(),
+      'ZXhhbXBsZS1ub25jZQ==', // 'example-nonce' in base64
+      'example-requestor-public' // This would be base64 in a real example
     );
   });
 });
