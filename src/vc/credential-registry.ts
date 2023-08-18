@@ -1,4 +1,9 @@
-import { EncryptionKey, bytesToUtf8, decryptWithKey } from '@meeco/cryppo';
+import {
+  EncryptionKey,
+  bytesToUtf8,
+  decryptWithKey,
+  decryptWithKeyDerivedFromString,
+} from '@meeco/cryppo';
 import { Logger } from 'winston';
 import { RegisterCredentialMessage } from '../hcs/messages.js';
 import { ResultType, fetchIPFSFile } from '../util/ipfs-fetch.js';
@@ -32,17 +37,19 @@ export class CredentialRegistry {
     this.logger?.verbose(`Register credential "${details.vc_id}"`);
 
     // Ensure we can actually decrypt the passphrase
-    const key = await decryptWithKey({
+    const decryptedPassphrase = await decryptWithKey({
       key: passphraseEncryptionKey,
       serialized: details.encrypted_passphrase,
     });
-    if (!key) {
+    if (!decryptedPassphrase) {
       throw new Error('Unable to register a credential without a passphrase');
     }
 
+    const passphrase = Buffer.from(decryptedPassphrase).toString('utf-8');
+
     return this.store.write(`${this.knownPrefix}:${details.vc_id}`, {
       ipfs_cid: details.ipfs_cid,
-      key,
+      passphrase,
     });
   }
 
@@ -60,7 +67,7 @@ export class CredentialRegistry {
       return cached.credential;
     }
 
-    const { ipfs_cid, key } = await this.store.read(
+    const { ipfs_cid, passphrase } = await this.store.read(
       `${this.knownPrefix}:${id}`
     );
 
@@ -70,9 +77,10 @@ export class CredentialRegistry {
     });
 
     this.logger?.debug(`Decrypt credential "${id}"`);
-    const decryptedContents = await decryptWithKey({
+
+    const decryptedContents = await decryptWithKeyDerivedFromString({
       serialized: encryptedCredential,
-      key: EncryptionKey.fromBytes(key),
+      passphrase,
     });
 
     this.logger?.debug(`Parse decrypted credential "${id}"`);
