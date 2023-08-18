@@ -25,9 +25,9 @@ await registry.registerCredential(
     operation: MessageType.REGISTER_CREDENTIAL,
     vc_id: `urn:uuid:6871fc25-0b80-421c-ae1a-457107a6aadf`,
     encrypted_passphrase:
-      'Aes256Gcm.OWhPuDTvE9C3r2OzQC3-6phXK9nQLQD8k52L16K_UhCVza9cBLOnNib3z75A4JxEt__1JkIeMOt_joQpypgO3Hd2TlEv90ngAQPhtVIT2Uns2OjpmftMHnjrmrKhGUbc.QUAAAAAFaXYADAAAAAAlRd8N6IqxE1rj5nIFYXQAEAAAAACvv9QafQFgWPgfnV5vcEqOAmFkAAUAAABub25lAAA=',
+      'Aes256Gcm.E0Agd8lDqW3HnKducPzkpsTWtxf6NPhx4wdudm45Ucg7SsbOd2fAAMDb0QIWd5IYVnxgfe-1oOwCDXjTkvUpm49DKe399sHH4VBfosDhS7vYwn4tUPLX4EtUAVRuwhqp.QUAAAAAFaXYADAAAAAA6nabrgad_cWS0O2YFYXQAEAAAAAA1FIYymXQLFXQXCtximnPNAmFkAAUAAABub25lAAA=',
     ipfs_cid:
-      'bafybeibs3vbylkk7ikhbkqd6zsjmspeajnm3onaqpad2a5tcvh3sk2xt5m/6871fc25-0b80-421c-ae1a-457107a6aadf',
+      'bafybeie44cfgb6y6sqerl6ltfyfl6l2otvz4ectbvmsq4j2rbljx4kiufq/6871fc25-0b80-421c-ae1a-457107a6aadf',
   },
   EncryptionKey.fromBytes(Buffer.from(passphraseEncryptionKeyHex, 'hex'))
 );
