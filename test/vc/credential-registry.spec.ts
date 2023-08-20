@@ -3,6 +3,7 @@ import {
   CipherStrategy,
   EncryptionKey,
   encryptWithKey,
+  encryptWithKeyDerivedFromString,
   utf8ToBytes,
 } from '@meeco/cryppo';
 import { MessageType } from '../../src/hcs/messages.js';
@@ -27,9 +28,10 @@ describe('CredentialRegistry', () => {
       const vc_id = 'example-id';
       const ipfs_cid = 'Qm12345';
       const key = EncryptionKey.generateRandom(32);
-      const passphrase = EncryptionKey.generateRandom(32);
+      const passphrase =
+        '668301721f4f5a31c7eb7d314d4c4c695a73afdf43c3d191db118fa2098c02d7';
       const encrypted_passphrase = await encryptWithKey({
-        data: passphrase.bytes,
+        data: Buffer.from(passphrase, 'utf-8'),
         key: key,
         strategy: CipherStrategy.AES_GCM,
       });
@@ -48,7 +50,7 @@ describe('CredentialRegistry', () => {
         `known_credentials:${vc_id}`,
         {
           ipfs_cid,
-          key: passphrase.bytes,
+          passphrase,
         }
       );
     });
@@ -101,10 +103,11 @@ describe('CredentialRegistry', () => {
         id: 'example-id',
         description: 'Fetched credential',
       };
-      const key = EncryptionKey.generateRandom(32);
-      const encryptedCredential = await encryptWithKey({
+      const passphrase =
+        '668301721f4f5a31c7eb7d314d4c4c695a73afdf43c3d191db118fa2098c02d7';
+      const encryptedCredential = await encryptWithKeyDerivedFromString({
         data: utf8ToBytes(JSON.stringify(credential)),
-        key,
+        passphrase,
         strategy: CipherStrategy.AES_GCM,
       });
 
@@ -112,7 +115,7 @@ describe('CredentialRegistry', () => {
       mockStore.read.mockResolvedValueOnce(null);
       mockStore.read.mockResolvedValueOnce({
         ipfs_cid,
-        key: key.bytes,
+        passphrase,
       });
       ipfsReader.mockResolvedValue(encryptedCredential.serialized);
 

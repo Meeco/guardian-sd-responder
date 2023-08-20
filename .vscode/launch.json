@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-r",
+        "dotenv/config",
+        "--loader",
+        "@swc-node/register/esm"
+      ],
+      "args": ["src/index.ts"],
+      "runtimeVersion": "18",
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    },
+    {
+      "name": "Test Request",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "-r",
+        "dotenv/config",
+        "--loader",
+        "@swc-node/register/esm"
+      ],
+      "args": ["src/example/process-test-request.ts"],
+      "runtimeVersion": "18",
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    }
+  ]
+}

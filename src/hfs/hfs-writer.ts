@@ -19,7 +19,7 @@ export class HfsWriter {
     private readonly maxWriteHbar = 5
   ) {}
 
-  public async writeFile(contents: string) {
+  public async writeFile(contents: string | Uint8Array) {
     const transaction = new FileCreateTransaction()
       .setKeys([this.writePublicKey])
       .setContents(contents)

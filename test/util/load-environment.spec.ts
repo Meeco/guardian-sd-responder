@@ -16,6 +16,7 @@ describe('Load environment', () => {
     RESPONDER_ACCOUNT_PRIVATE_KEY:
       '00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
     PASSPHRASE_ENCRYPTION_KEY_HEX: 'abcd124',
+    HEDERA_ENCRYPTION_PRIVATE_KEY_HEX: '234abcd',
   };
 
   it('parses all variables and returns environment configuration', () => {
@@ -41,6 +42,7 @@ describe('Load environment', () => {
         type: 'Ed25519VerificationKey2018',
       },
       passphraseEncryptionKeyHex: 'abcd124',
+      hederaEncryptionPrivateKeyHex: '234abcd',
     });
   });
 
@@ -108,6 +110,15 @@ describe('Load environment', () => {
     expect(() => loadEnvironment(env)).toThrow(
       new Error(
         'Environment variable PASSPHRASE_ENCRYPTION_KEY_HEX must be present'
+      )
+    );
+  });
+
+  it('requires a hedera encryption key', () => {
+    const { HEDERA_ENCRYPTION_PRIVATE_KEY_HEX, ...env } = exampleEnvironment;
+    expect(() => loadEnvironment(env)).toThrow(
+      new Error(
+        'Environment variable HEDERA_ENCRYPTION_PRIVATE_KEY_HEX must be present'
       )
     );
   });

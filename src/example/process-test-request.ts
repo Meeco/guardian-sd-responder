@@ -14,21 +14,30 @@ import { log } from '../util/logger.js';
 const environment = loadEnvironment();
 const { responderDid, responderTopicsIds, passphraseEncryptionKeyHex } =
   environment;
-const { registry, reader, writer, messenger, bbsBlsService, verifier } =
-  createServices(environment);
+const {
+  registry,
+  reader,
+  writer,
+  messenger,
+  bbsBlsService,
+  verifier,
+  hcsEncryption,
+} = createServices(environment);
 
 await registry.registerCredential(
   {
     operation: MessageType.REGISTER_CREDENTIAL,
-    vc_id: `urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9`,
+    vc_id: `urn:uuid:6871fc25-0b80-421c-ae1a-457107a6aadf`,
     encrypted_passphrase:
-      'Aes256Gcm.lESQoX90KLyB4FM8kKnW1tYmsPI9P9Ma3RPQhqYz21Q=.QUAAAAAFaXYADAAAAABGLi4kytbeaqKAuHIFYXQAEAAAAABTNaI2LuYsHWFl97TN91bQAmFkAAUAAABub25lAAA=',
-    ipfs_cid: 'QmNxHdP8EoKQTqLDZtVijv66aeGKsxGEPwCz4AMkj2AExZ',
+      'Aes256Gcm.E0Agd8lDqW3HnKducPzkpsTWtxf6NPhx4wdudm45Ucg7SsbOd2fAAMDb0QIWd5IYVnxgfe-1oOwCDXjTkvUpm49DKe399sHH4VBfosDhS7vYwn4tUPLX4EtUAVRuwhqp.QUAAAAAFaXYADAAAAAA6nabrgad_cWS0O2YFYXQAEAAAAAA1FIYymXQLFXQXCtximnPNAmFkAAUAAABub25lAAA=',
+    ipfs_cid:
+      'bafybeie44cfgb6y6sqerl6ltfyfl6l2otvz4ectbvmsq4j2rbljx4kiufq/6871fc25-0b80-421c-ae1a-457107a6aadf',
   },
   EncryptionKey.fromBytes(Buffer.from(passphraseEncryptionKeyHex, 'hex'))
 );
 
 const [topicId] = responderTopicsIds;
+
 const requestFileId = '0.0.15056857';
 
 const requestHandler = new PresentationRequestHandler(
@@ -39,6 +48,7 @@ const requestHandler = new PresentationRequestHandler(
   registry,
   bbsBlsService,
   verifier,
+  hcsEncryption,
   log
 );
 
