@@ -191,26 +191,25 @@ describe('PresentationRequestHandler', () => {
 
     mockDecryptedFileResponse(
       JSON.stringify({
-        authorization_details: {
-          did: 'did:key:4567',
-          presentationDefinition,
-          verifiablePresentation: authorizationDetails.verifiablePresentation,
-        },
-        presentation_definition: {},
+        presentation_definition: presentationDefinition,
+        authorization_details: authorizationDetails,
       })
     );
+    registry.fetchCredential.mockResolvedValue(credential);
+    verifier.verify.mockResolvedValue(true);
     verifier.isTrusted.mockResolvedValue(false);
-    verifier.verify.mockResolvedValue(false);
 
     await handler.handle(message);
 
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:4567',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'UNTRUSTED_ISSUER',
-          message: `Issuer "did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL" is not a trusted issuer.`,
+          message: `Issuer "did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL" is not a trusted issuer for any credential types ${JSON.stringify(
+            ['VerifiableCredential', 'AlumniCredential']
+          )}.`,
         },
       }),
       topicId: '0.0.1234',
@@ -228,12 +227,8 @@ describe('PresentationRequestHandler', () => {
 
     mockDecryptedFileResponse(
       JSON.stringify({
-        authorization_details: {
-          did: 'did:key:4567',
-          presentationDefinition,
-          verifiablePresentation: authorizationDetails.verifiablePresentation,
-        },
-        presentation_definition: {},
+        presentation_definition: presentationDefinition,
+        authorization_details: authorizationDetails,
       })
     );
     verifier.isTrusted.mockResolvedValue(true);
@@ -244,7 +239,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:4567',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'INVALID_PRESENTATION',
           message: `Presentation could not be verified.`,
@@ -370,9 +365,7 @@ describe('PresentationRequestHandler', () => {
     mockDecryptedFileResponse(
       JSON.stringify({
         presentation_definition: presentationDefinition,
-        authorization_details: {
-          did: 'did:key:request_did',
-        },
+        authorization_details: authorizationDetails,
       })
     );
     registry.fetchCredential.mockResolvedValue(credential);
@@ -395,7 +388,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:request_did',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'UNKNOWN_ERROR',
           message: `There was an unexpected problem processing the request`,
@@ -433,7 +426,10 @@ describe('PresentationRequestHandler', () => {
         },
       })
     );
-    registry.fetchCredential.mockResolvedValue(credential);
+    registry.fetchCredential.mockResolvedValue({
+      guardian_id: 'did:key:guardian_1',
+      credential,
+    });
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockRejectedValue(new Error('Test error'));
     bbsBls.createProof.mockResolvedValue(selectiveCredential);
@@ -488,7 +484,10 @@ describe('PresentationRequestHandler', () => {
         authorization_details: authorizationDetails,
       })
     );
-    registry.fetchCredential.mockResolvedValue(credential);
+    registry.fetchCredential.mockResolvedValue({
+      guardian_id: 'did:key:guardian_1',
+      credential,
+    });
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockResolvedValue({
       toString() {
@@ -530,7 +529,9 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).not.toHaveBeenCalled();
 
     expect(verifier.isTrusted).toHaveBeenCalledWith(
-      'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL'
+      'did:key:guardian_1',
+      'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
+      ['VerifiableCredential', 'AlumniCredential']
     );
     expect(verifier.verify).toHaveBeenCalledWith(
       authorizationDetails.verifiablePresentation

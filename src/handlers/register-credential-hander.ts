@@ -1,4 +1,3 @@
-import { EncryptionKey } from '@meeco/cryppo';
 import { Logger } from 'winston';
 import { DecodedMessage } from '../hcs/decoded-message.js';
 import { MessageType, RegisterCredentialMessage } from '../hcs/messages.js';
@@ -12,14 +11,14 @@ export class RegisterCredentialHandler
 
   constructor(
     protected readonly registry: CredentialRegistry,
-    protected readonly passphraseEncryptionKey: EncryptionKey,
     protected readonly logger?: Logger
   ) {}
 
   async handle(message: DecodedMessage<RegisterCredentialMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { vc_id, encrypted_passphrase, ipfs_cid } = message.contents;
+    const { vc_id, encrypted_passphrase, ipfs_cid, guardian_id } =
+      message.contents;
     if (!vc_id) {
       this.logger?.error(
         `Skipping credential due to missing parameter on "${this.operation}" message: vc_id`
@@ -38,12 +37,15 @@ export class RegisterCredentialHandler
       );
       return;
     }
+    if (!guardian_id) {
+      this.logger?.error(
+        `Skipping credential due to missing parameter on "${this.operation}" message: guardian_id`
+      );
+      return;
+    }
 
     try {
-      await this.registry.registerCredential(
-        message.contents,
-        this.passphraseEncryptionKey
-      );
+      await this.registry.registerCredential(message.contents);
     } catch (error) {
       this.logger?.error(error);
       this.logger?.error(

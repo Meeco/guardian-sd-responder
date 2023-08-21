@@ -22,7 +22,7 @@ describe('RegisterCredentialHandler', () => {
   beforeEach(async () => {
     registry = createSpyObject();
     logger = createSpyObject();
-    handler = new RegisterCredentialHandler(registry, key, logger);
+    handler = new RegisterCredentialHandler(registry, logger);
     const encrypted = await encryptWithKey({
       data: passphrase.bytes,
       key,
@@ -31,9 +31,29 @@ describe('RegisterCredentialHandler', () => {
     encrypted_passphrase = encrypted.serialized!;
   });
 
+  it('requires a guardian_id', async () => {
+    const message = DecodedMessage.fromTopicMessage<RegisterCredentialMessage>(
+      createTopicMessage({
+        operation: MessageType.PRESENTATION_QUERY,
+        vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
+        ipfs_cid: 'Qm1234',
+        encrypted_passphrase,
+      }),
+      '0.0.1234'
+    )!;
+
+    await handler.handle(message);
+
+    expect(registry.registerCredential).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      'Skipping credential due to missing parameter on "register-credential" message: guardian_id'
+    );
+  });
+
   it('requires a vc_id', async () => {
     const message = DecodedMessage.fromTopicMessage<RegisterCredentialMessage>(
       createTopicMessage({
+        guardian_id: 'guardian_1',
         operation: MessageType.PRESENTATION_QUERY,
         ipfs_cid: 'Qm1234',
         encrypted_passphrase,
@@ -52,6 +72,7 @@ describe('RegisterCredentialHandler', () => {
   it('requires a ipfs_cid', async () => {
     const message = DecodedMessage.fromTopicMessage<RegisterCredentialMessage>(
       createTopicMessage({
+        guardian_id: 'guardian_1',
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
         encrypted_passphrase,
@@ -70,6 +91,7 @@ describe('RegisterCredentialHandler', () => {
   it('requires a encrypted_passphrase', async () => {
     const message = DecodedMessage.fromTopicMessage<RegisterCredentialMessage>(
       createTopicMessage({
+        guardian_id: 'guardian_1',
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
         ipfs_cid: 'Qm1234',
@@ -88,6 +110,7 @@ describe('RegisterCredentialHandler', () => {
   it('registers new credentials that are able to be decrypted', async () => {
     const message = DecodedMessage.fromTopicMessage<RegisterCredentialMessage>(
       createTopicMessage({
+        guardian_id: 'guardian_1',
         operation: MessageType.PRESENTATION_QUERY,
         vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
         ipfs_cid: 'Qm1234',
@@ -98,14 +121,12 @@ describe('RegisterCredentialHandler', () => {
 
     await handler.handle(message);
 
-    expect(registry.registerCredential).toHaveBeenCalledWith(
-      {
-        operation: MessageType.PRESENTATION_QUERY,
-        vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
-        ipfs_cid: 'Qm1234',
-        encrypted_passphrase,
-      },
-      key
-    );
+    expect(registry.registerCredential).toHaveBeenCalledWith({
+      guardian_id: 'guardian_1',
+      operation: MessageType.PRESENTATION_QUERY,
+      vc_id: 'urn:uuid:4fd6b06c-e27b-4726-b6a0-00e6211a8f81',
+      ipfs_cid: 'Qm1234',
+      encrypted_passphrase,
+    });
   });
 });

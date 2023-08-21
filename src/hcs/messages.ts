@@ -65,6 +65,7 @@ type ErrorResponse = {
 export type PresentationResponseMessage = SuccessResponse | ErrorResponse;
 
 export interface RegisterCredentialMessage {
+  guardian_id: string;
   operation: MessageType.REGISTER_CREDENTIAL;
   vc_id: string;
   ipfs_cid: string;

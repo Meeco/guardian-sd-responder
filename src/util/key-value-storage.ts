@@ -2,7 +2,7 @@ import { RootDatabase, open } from 'lmdb';
 
 export abstract class KeyValueStorage {
   abstract write(key: string, value: any): Promise<any>;
-  abstract read(key: string): Promise<any>;
+  abstract read<T = any>(key: string): Promise<T>;
 }
 
 export class LmdbStorage implements KeyValueStorage {
