@@ -61,7 +61,6 @@ describe('PresentationQueryHandler', () => {
         operation: MessageType.QUERY_RESPONSE,
         request_id: '123',
         responder_did: 'did:key:1234',
-        response_ephem_public_key: 'ZXhhbXBsZS1wdWJsaWM=', // 'example-public' in base64
         offer_hbar: 0,
       }),
       topicId: '0.0.1234',

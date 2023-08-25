@@ -548,6 +548,17 @@
     base64url-universal "^2.0.0"
     jsonld-signatures "^11.0.0"
 
+"@digitalbazaar/minimal-cipher@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@digitalbazaar/minimal-cipher/-/minimal-cipher-5.1.1.tgz#ea976a6fc0c14655e8e25500d3149293af625586"
+  integrity sha512-MLxYmdeRO8/lxrN4WgYYE8r8I2vSA/ZGTaeP/Ph/eBaCLAnkmagMFKeTvIoiTXokECMzEpL6WY5vheGq+WyiyQ==
+  dependencies:
+    "@stablelib/chacha" "^1.0.1"
+    "@stablelib/chacha20poly1305" "^1.0.1"
+    base58-universal "^2.0.0"
+    base64url-universal "^2.0.0"
+    tweetnacl "^1.0.3"
+
 "@digitalbazaar/security-context@^1.0.0":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@digitalbazaar/security-context/-/security-context-1.0.1.tgz#badc4b8da03411a32d4e7321ce7c4b355776b410"
@@ -561,6 +572,16 @@
     credentials-context "^2.0.0"
     jsonld "^8.1.0"
     jsonld-signatures "^11.0.0"
+
+"@digitalbazaar/x25519-key-agreement-key-2020@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@digitalbazaar/x25519-key-agreement-key-2020/-/x25519-key-agreement-key-2020-3.0.1.tgz#fff3be5d2a35cf0b1ebeb918c061a8b58c231ef4"
+  integrity sha512-GmpPEc3ZD/7fz3St38ELa8qgJzjfTxCJi7cwAYPAcZ8Iynldj8sSf2hIblYjjlB82pIENhyXLQHcIALluGcrqA==
+  dependencies:
+    "@noble/ed25519" "^1.6.0"
+    base58-universal "^2.0.0"
+    crypto-ld "^7.0.0"
+    tweetnacl "^1.0.3"
 
 "@eslint-community/eslint-utils@^4.2.0":
   version "4.4.0"

@@ -29,10 +29,10 @@ await registry.registerCredential({
   operation: MessageType.REGISTER_CREDENTIAL,
   vc_id: `urn:uuid:6871fc25-0b80-421c-ae1a-457107a6aadf`,
   encrypted_passphrase:
-    'Aes256Gcm.E0Agd8lDqW3HnKducPzkpsTWtxf6NPhx4wdudm45Ucg7SsbOd2fAAMDb0QIWd5IYVnxgfe-1oOwCDXjTkvUpm49DKe399sHH4VBfosDhS7vYwn4tUPLX4EtUAVRuwhqp.QUAAAAAFaXYADAAAAAA6nabrgad_cWS0O2YFYXQAEAAAAAA1FIYymXQLFXQXCtximnPNAmFkAAUAAABub25lAAA=',
+    'Aes256Gcm.2KrGWIP9TJmHqfnglKdYn8FJu7ZuFHk-ZZPeA--wjwoOowIJBNAaG6mco45YlzAshzXPxOb86_3d0CnnnsgaqqqQrwFDnJiihCb_a3yHmu-afMwoFhru2-QWHrBHGLQI.QUAAAAAFaXYADAAAAACr5b68bp29WIxyfTcFYXQAEAAAAAD-rpHiK0hZEKFHqGnzucIvAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAAARqZHS23aNrOZ8lPaQ6nxBMdC1UBBpAB1QAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA',
   ipfs_cid:
-    'bafybeie44cfgb6y6sqerl6ltfyfl6l2otvz4ectbvmsq4j2rbljx4kiufq/6871fc25-0b80-421c-ae1a-457107a6aadf',
-  guardian_id: 'did:key:1234',
+    'bafybeifkz53amsv53iyojtjhi5rayym6jtavxipsmimpbrtexs53kofvqy/credential.json',
+  guardian_id: '135742af-a457-45ef-8a4e-03dbf6b98fd0',
 });
 
 const [topicId] = responderTopicsIds;

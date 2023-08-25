@@ -8,7 +8,7 @@ describe('PresentationVerifierDigitalBazaar', () => {
   const testGuardians: GuardianConfig[] = [
     {
       id: 'guardian_1',
-      master_passphrase:
+      passphrase_encryption_key:
         '668301721f4f5a31c7eb7d314d4c4c695a73afdf43c3d191db118fa2098c02d7',
       topic_ids: ['0.0.0.1'],
       trusted_issuers: [

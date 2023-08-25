@@ -23,7 +23,7 @@ describe('CredentialRegistry', () => {
   const testGuardians: GuardianConfig[] = [
     {
       id: 'guardian_1',
-      master_passphrase:
+      passphrase_encryption_key:
         '668301721f4f5a31c7eb7d314d4c4c695a73afdf43c3d191db118fa2098c02d7',
       topic_ids: ['0.0.0.1'],
       trusted_issuers: [
@@ -56,7 +56,7 @@ describe('CredentialRegistry', () => {
       const key = '3067d3cb9b354a3c998d2e6aa9858de2';
       const encrypted_passphrase = await encryptWithKeyDerivedFromString({
         data: Buffer.from(key, 'utf-8'),
-        passphrase: testGuardians[0].master_passphrase,
+        passphrase: testGuardians[0].passphrase_encryption_key,
         strategy: CipherStrategy.AES_GCM,
       });
 
@@ -168,7 +168,7 @@ describe('CredentialRegistry', () => {
 
       const encrypted_passphrase = await encryptWithKeyDerivedFromString({
         data: Buffer.from(passphrase, 'utf-8'),
-        passphrase: testGuardians[0].master_passphrase,
+        passphrase: testGuardians[0].passphrase_encryption_key,
         strategy: CipherStrategy.AES_GCM,
       });
 

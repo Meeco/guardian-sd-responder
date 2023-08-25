@@ -45,7 +45,7 @@ export class CredentialRegistry {
   private async decryptPassphrase(details: RegisterCredentialMessage) {
     const passphrase = this.guardians.find(
       (item) => item.id === details.guardian_id
-    )?.master_passphrase;
+    )?.passphrase_encryption_key;
 
     if (!passphrase) {
       throw new Error(
