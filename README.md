@@ -36,9 +36,9 @@ Note, a holder of a credential from a `trusted_issuers.did` issuer can request d
 
 ## Running
 
-Ensure `.env.example` is copied as `.env` and completed with all properties. 
+## Running
 
-Alternatively, ensure that the required properties are provided as environment variables by other means.
+Ensure `config.example.json` is copied as `config.json` and completed with all properties.
 
 It can be run locally with node > 18:
 
