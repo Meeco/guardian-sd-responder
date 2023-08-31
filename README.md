@@ -11,6 +11,7 @@ See `config.example.json` for an example configuration file.
 | Property                            | Description                                                                                      |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `did`                               | The did of the responder                                                                         |
+| `hedera_network`                    | One of `testnet` `previewnet` or `maintenet`                                                     |
 | `edsa_key_config`                   | DID key configuration for the Ed255192018 or Ed255192020 key for the responder did               |
 | `payer_account_id`                  | Hedera account id to use to pay for HCS/HFS transactions                                         |
 | `payer_account_public_key`          | Hedera account public key to use to pay for HCS/HFS transactions                                 |
@@ -36,7 +37,9 @@ Note, a holder of a credential from a `trusted_issuers.did` issuer can request d
 
 ## Running
 
-Ensure `.env.example` is copied as `.env` and completed with all properties. Alternatively, ensure that the required properties are provided as environment variables by other means.
+## Running
+
+Ensure `config.example.json` is copied as `config.json` and completed with all properties.
 
 It can be run locally with node > 18:
 
@@ -47,12 +50,14 @@ There is also a provided Dockerfile to build and run the responder as a containe
 
 ## Response Error Codes
 
-When handling a `presentation-request` message, the responder may return one of several error codes in the `presentation-response`. These are described below.
+When handling a `presentation-request` message, the responder may return one of several error codes in the `presentation-response`. 
 
-`FILE_DECRYPTION_FAILED` - The responer was unable to decrypt the request file.
-`FILE_PARSE_FAILED` - The request file was decrypted but was not parsed as a valid JSON document.
-`UNTRUSTED_ISSUER` - The issuer of the authorization presentation was not configured as a trusted issuer by this responder.
-`INVALID_PRESENTATION` - The authorization presentation could not be verified.
-`MISSING_CREDENTIAL_ID` - The request `field.filter.const` did not contain a credential id.
-`CREDENTIAL_NOT_FOUND` - The requested credential ID was not able to be fetched from IPFS.
-`UNKNOWN_ERROR` - Some other unexpected error ocurred.
+These are described below.
+
+- `FILE_DECRYPTION_FAILED` - The responer was unable to decrypt the request file.
+- `FILE_PARSE_FAILED` - The request file was decrypted but was not parsed as a valid JSON document.
+- `UNTRUSTED_ISSUER` - The issuer of the authorization presentation was not configured as a trusted issuer by this responder.
+- `INVALID_PRESENTATION` - The authorization presentation could not be verified.
+- `MISSING_CREDENTIAL_ID` - The request `field.filter.const` did not contain a credential id.
+- `CREDENTIAL_NOT_FOUND` - The requested credential ID was not able to be fetched from IPFS.
+- `UNKNOWN_ERROR` - Some other unexpected error ocurred.

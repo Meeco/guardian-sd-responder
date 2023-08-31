@@ -22,8 +22,11 @@ export interface KeyConfig {
   private_key_hex: string;
 }
 
+export type HederaNetwork = 'testnet' | 'previewnet' | 'mainnet';
+
 export interface ResponderConfig {
   did: string;
+  hedera_network: HederaNetwork;
   edsa_key_config: KeyConfig;
   payer_account_id: string;
   payer_account_private_key: string;

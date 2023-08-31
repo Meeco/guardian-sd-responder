@@ -41,10 +41,15 @@ export class HcsEncryption {
   async encrypt(obj: { [key: string]: any }, recipientKeyIdOrDid: string) {
     const [did] = recipientKeyIdOrDid.split('#');
     const didDoc = await this.didResolver(did);
-    let key = didDoc.publicKey.find(
-      (key: any) => key.id === recipientKeyIdOrDid
-    );
-    if (!key) key = didDoc.publicKey[0];
+    const keys = [
+      ...(didDoc.publicKey ?? []),
+      ...(didDoc.verificationMethod ?? []),
+    ];
+    let key = keys.find((key: any) => key.id === recipientKeyIdOrDid);
+    if (!key) key = keys[0];
+    if (!key) {
+      throw new Error('No applicable keys found on did document');
+    }
 
     let keyPair;
     switch (key.type) {

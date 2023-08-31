@@ -17,7 +17,7 @@ import {
   PresentationSigner,
 } from '../vc/presentation-signer.js';
 import { PresentationVerifierDigitalBazaar } from '../vc/presentation-verifier-digitalbazaar.js';
-import { EnvironmentConfig } from './config.js';
+import { EnvironmentConfig, HederaNetwork } from './config.js';
 import { fetchIPFSFile } from './ipfs-fetch.js';
 import { LmdbStorage } from './key-value-storage.js';
 import { log } from './logger.js';
@@ -48,8 +48,27 @@ export const loadEnvironment = (): EnvironmentConfig => {
   return JSON.parse(configJson);
 };
 
-const _createHederaClient = (accountId: string, accountPrivateKey: string) => {
-  const client = Client.forTestnet();
+const _createHederaClient = (
+  accountId: string,
+  network: HederaNetwork,
+  accountPrivateKey: string
+) => {
+  let client: Client;
+
+  switch (network) {
+    case 'mainnet':
+      client = Client.forMainnet();
+      break;
+    case 'previewnet':
+      client = Client.forPreviewnet();
+      break;
+    case 'testnet':
+      client = Client.forTestnet();
+      break;
+    default:
+      throw Error(`Unsupported hedera_network in config "${network}"`);
+  }
+
   client
     .setOperator(accountId, accountPrivateKey)
     .setDefaultMaxTransactionFee(new Hbar(1))
@@ -93,6 +112,7 @@ export const createServices = (configuration: EnvironmentConfig) => {
   const { responder } = configuration;
   const {
     did,
+    hedera_network,
     payer_account_id,
     payer_account_private_key,
     payer_account_public_key,
@@ -100,6 +120,7 @@ export const createServices = (configuration: EnvironmentConfig) => {
   } = responder;
   const client = _createHederaClient(
     payer_account_id,
+    hedera_network,
     payer_account_private_key
   );
 

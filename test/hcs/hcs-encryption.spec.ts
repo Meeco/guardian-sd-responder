@@ -11,7 +11,7 @@ describe('hcs encryption', () => {
     authentication: [
       'did:hedera:testnet:z6MkokyNgNyTsUFpzZhdViALRgZ2BQ9PhxYUchFU4nTir91q_0.0.0#did-root-key',
     ],
-    publicKey: [
+    verificationMethod: [
       {
         id: 'did:hedera:testnet:z6MkokyNgNyTsUFpzZhdViALRgZ2BQ9PhxYUchFU4nTir91q_0.0.0#did-root-key',
         type: 'Ed25519VerificationKey2020',
@@ -31,6 +31,12 @@ describe('hcs encryption', () => {
     assertionMethod: ['#did-root-key', '#did-root-key-bbs'],
   };
 
+  const responderDidDocOld = {
+    ...responderDidDoc,
+    publicKey: responderDidDoc.verificationMethod,
+    verificationMethod: undefined,
+  };
+
   const requestorPrivateKeyMultibase =
     'zrv5gtjREBZdLxDTRXPk92Yd9JNj1iweZquz7U78qfuqDLftApGn28Te9TqCj8PAsY5r5K3tLaYNQAKN2qjhY4hiGtz';
   const requestorDidDoc = {
@@ -39,7 +45,7 @@ describe('hcs encryption', () => {
     authentication: [
       'did:hedera:testnet:z6MkgyCykwm4PhQncy9vK7WXi4F1wx4eXjQZnE7CEedgPpMg_0.0.0#did-root-key',
     ],
-    publicKey: [
+    verificationMethod: [
       {
         id: 'did:hedera:testnet:z6MkgyCykwm4PhQncy9vK7WXi4F1wx4eXjQZnE7CEedgPpMg_0.0.0#did-root-key',
         type: 'Ed25519VerificationKey2020',
@@ -58,29 +64,38 @@ describe('hcs encryption', () => {
     ],
     assertionMethod: ['#did-root-key', '#did-root-key-bbs'],
   };
-  const mockResolver = (did: string) => {
-    if (did === requestorDidDoc.id) return requestorDidDoc;
-    if (did === responderDidDoc.id) return responderDidDoc;
-    throw new Error(`Could not resolve did "${did}"`);
+
+  const requestorDidDocOld = {
+    ...requestorDidDoc,
+    publicKey: requestorDidDoc.verificationMethod,
+    verificationMethod: undefined,
   };
 
   it('encrypts and decrypts a message (both directions)', async () => {
+    const mockResolver = (did: string) => {
+      if (did === requestorDidDoc.id) return requestorDidDoc;
+      if (did === responderDidDoc.id) return responderDidDoc;
+      throw new Error(`Could not resolve did "${did}"`);
+    };
+
     const client = new HcsEncryption(
       {
-        id: requestorDidDoc.publicKey[0].id,
+        id: requestorDidDoc.verificationMethod[0].id,
         controller: requestorDidDoc.id,
         type: 'Ed25519VerificationKey2020',
-        publicKeyMultibase: requestorDidDoc.publicKey[0].publicKeyMultibase!,
+        publicKeyMultibase:
+          requestorDidDoc.verificationMethod[0].publicKeyMultibase!,
         privateKeyMultibase: requestorPrivateKeyMultibase,
       },
       mockResolver
     );
     const responder = new HcsEncryption(
       {
-        id: responderDidDoc.publicKey[0].id,
+        id: responderDidDoc.verificationMethod[0].id,
         controller: responderDidDoc.id,
         type: 'Ed25519VerificationKey2020',
-        publicKeyMultibase: responderDidDoc.publicKey[0].publicKeyMultibase!,
+        publicKeyMultibase:
+          responderDidDoc.verificationMethod[0].publicKeyMultibase!,
         privateKeyMultibase: responderPrivateKeyMultibase,
       },
       mockResolver
@@ -92,7 +107,7 @@ describe('hcs encryption', () => {
     };
     const encrypted1 = await client.encrypt(
       message1,
-      responderDidDoc.publicKey[0].id
+      responderDidDoc.verificationMethod[0].id
     );
     const decrypted1 = await responder.decrypt(encrypted1);
     expect(decrypted1).toEqual(message1);
@@ -103,7 +118,58 @@ describe('hcs encryption', () => {
     };
     const encrypted2 = await client.encrypt(
       message2,
-      responderDidDoc.publicKey[0].id
+      responderDidDoc.verificationMethod[0].id
+    );
+    const decrypted2 = await responder.decrypt(encrypted2);
+    expect(decrypted2).toEqual(message2);
+  });
+
+  it('is backwards compatible with with publicKey documents', async () => {
+    const mockResolver = (did: string) => {
+      if (did === requestorDidDoc.id) return requestorDidDocOld;
+      if (did === responderDidDoc.id) return responderDidDocOld;
+      throw new Error(`Could not resolve did "${did}"`);
+    };
+
+    const client = new HcsEncryption(
+      {
+        id: requestorDidDocOld.publicKey[0].id,
+        controller: requestorDidDoc.id,
+        type: 'Ed25519VerificationKey2020',
+        publicKeyMultibase: requestorDidDocOld.publicKey[0].publicKeyMultibase!,
+        privateKeyMultibase: requestorPrivateKeyMultibase,
+      },
+      mockResolver
+    );
+    const responder = new HcsEncryption(
+      {
+        id: responderDidDocOld.publicKey[0].id,
+        controller: responderDidDoc.id,
+        type: 'Ed25519VerificationKey2020',
+        publicKeyMultibase: responderDidDocOld.publicKey[0].publicKeyMultibase!,
+        privateKeyMultibase: responderPrivateKeyMultibase,
+      },
+      mockResolver
+    );
+
+    // Alice to Bob
+    const message1 = {
+      message: 'Hello, Bob!',
+    };
+    const encrypted1 = await client.encrypt(
+      message1,
+      responderDidDocOld.publicKey[0].id
+    );
+    const decrypted1 = await responder.decrypt(encrypted1);
+    expect(decrypted1).toEqual(message1);
+
+    // Bob to Alice
+    const message2 = {
+      message: 'Hi, Alice!',
+    };
+    const encrypted2 = await client.encrypt(
+      message2,
+      responderDidDocOld.publicKey[0].id
     );
     const decrypted2 = await responder.decrypt(encrypted2);
     expect(decrypted2).toEqual(message2);
