@@ -14,36 +14,14 @@ import {
   VerifiablePresentation,
 } from './types.js';
 
-export class PresentationVerifierDigitalBazaar implements PresentationVerifier {
+export class PresentationVerifierDigitalBazaar extends PresentationVerifier {
   constructor(
     private readonly documentLoader: DocumentLoader,
-    private readonly guardians: GuardianConfig[],
-    private readonly logger?: Logger
-  ) {}
-
-  async isTrusted(
-    guardianId: string,
-    issuer: string,
-    credentialTypes: string | string[]
+    protected guardians: GuardianConfig[],
+    protected readonly logger?: Logger
   ) {
-    const guardian = this.guardians.find((item) => item.id === guardianId);
-
-    if (!guardian) return false;
-
-    const intersects = (arr1: any[], arr2: any[]) =>
-      !!arr1.find((item) => arr2.includes(item));
-
-    if (!Array.isArray(credentialTypes)) {
-      credentialTypes = [credentialTypes];
-    }
-
-    return !!guardian.trusted_issuers.find(
-      (item) =>
-        item.did === issuer &&
-        intersects(credentialTypes as string[], item.credential_types)
-    );
+    super(guardians, logger);
   }
-
   async verify(presentation: VerifiablePresentation) {
     if (!presentation) return false;
 

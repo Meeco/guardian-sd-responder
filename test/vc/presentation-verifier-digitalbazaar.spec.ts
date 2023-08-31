@@ -11,52 +11,9 @@ describe('PresentationVerifierDigitalBazaar', () => {
       passphrase_encryption_key:
         '668301721f4f5a31c7eb7d314d4c4c695a73afdf43c3d191db118fa2098c02d7',
       topic_ids: ['0.0.0.1'],
-      trusted_issuers: [
-        {
-          did: 'did:key:1234',
-          credential_types: ['UniversityCredential', 'TertiaryCredential'],
-        },
-        {
-          did: 'did:key:6789',
-          credential_types: ['UniversityCredential'],
-        },
-      ],
+      issued_credentials: [],
     },
   ];
-
-  it('isTrusted returns true if the issuer can access the given credential type', async () => {
-    const verifier = new PresentationVerifierDigitalBazaar(
-      testLoader,
-      testGuardians
-    );
-
-    await expect(
-      verifier.isTrusted('guardian_1', 'did:key:1234', 'UniversityCredential')
-    ).resolves.toEqual(true);
-
-    await expect(
-      verifier.isTrusted('guardian_1', 'did:key:1234', ['TertiaryCredential'])
-    ).resolves.toEqual(true);
-
-    await expect(
-      verifier.isTrusted('guardian_1', 'did:key:1234', [
-        'UniversityCredential',
-        'TertiaryCredential',
-      ])
-    ).resolves.toEqual(true);
-
-    await expect(
-      verifier.isTrusted('guardian_1', 'did:key:1234', ['AcademicCredential'])
-    ).resolves.toEqual(false);
-
-    await expect(
-      verifier.isTrusted('guardian_1', 'did:key:6789', ['TertiaryCredential'])
-    ).resolves.toEqual(false);
-
-    await expect(
-      verifier.isTrusted('guardian_7', 'did:key:999', ['UniversityCredential'])
-    ).resolves.toEqual(false);
-  });
 
   it('verifies a valid presentation', async () => {
     const verifier = new PresentationVerifierDigitalBazaar(
