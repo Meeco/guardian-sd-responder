@@ -44,13 +44,8 @@ export class PresentationRequestHandler
   async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const {
-      recipient_did,
-      request_file_id,
-      request_id,
-      request_file_nonce,
-      request_ephem_public_key,
-    } = message.contents as PresentationRequestMessage;
+    const { recipient_did, request_file_id, request_id } =
+      message.contents as PresentationRequestMessage;
     const challenge = message.consensusTimestamp.toString();
 
     if (recipient_did !== this.responderDid) {
@@ -65,17 +60,14 @@ export class PresentationRequestHandler
     }
 
     this.logger?.verbose(`Fetch request file "${request_file_id}"`);
-    const contents = await this.reader.readFile(request_file_id);
+    const contentsBuffer = await this.reader.readFile(request_file_id);
+    const contents = Buffer.from(contentsBuffer).toString('utf-8');
 
     this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
     let decrypted: Uint8Array;
 
     try {
-      decrypted = this.encryption.decrypt(
-        contents,
-        request_file_nonce,
-        request_ephem_public_key
-      );
+      decrypted = await this.encryption.decrypt(contents);
       this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
     } catch (err) {
       return this.sendErrorResponse({
@@ -222,13 +214,10 @@ export class PresentationRequestHandler
       );
 
       this.logger?.verbose('Encrypt presentation');
-      const response_file_nonce = Buffer.from(
-        this.encryption.generateNonce()
-      ).toString('base64');
-      const encryptedResponse = this.encryption.encrypt(
-        Buffer.from(JSON.stringify(signedPresentation), 'utf-8'),
-        response_file_nonce,
-        request_ephem_public_key
+
+      const encryptedResponse = await this.encryption.encrypt(
+        signedPresentation,
+        recipient_did
       );
 
       this.logger?.verbose('Write encrypted presentation to HFS');
@@ -244,10 +233,6 @@ export class PresentationRequestHandler
         operation: MessageType.PRESENTATION_RESPONSE,
         request_id,
         recipient_did: authorization_details.did,
-        response_ephem_public_key: Buffer.from(
-          this.encryption.publicKey
-        ).toString('base64'),
-        response_file_nonce,
         response_file_id: fileId.toString(),
       };
 

@@ -51,9 +51,6 @@ export class PresentationQueryHandler
       operation: MessageType.QUERY_RESPONSE,
       request_id,
       responder_did: this.responderDid,
-      response_ephem_public_key: Buffer.from(
-        this.encryption.publicKey
-      ).toString('base64'),
       offer_hbar: 0,
     };
 

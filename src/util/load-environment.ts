@@ -1,6 +1,7 @@
 import { Client, Hbar, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import bs58 from 'bs58';
 import { existsSync, readFileSync } from 'fs';
+import { base58btc } from 'multiformats/bases/base58';
 import { join } from 'path';
 import { HcsEncryption } from '../hcs/hcs-encryption.js';
 import { HcsMessenger } from '../hcs/hcs-messenger.js';
@@ -8,6 +9,7 @@ import { HfsReader } from '../hfs/hfs-reader.js';
 import { HfsWriter } from '../hfs/hfs-writer.js';
 import { MattrBbsBlsService } from '../vc/bbs-bls-service-mattr.js';
 import { CredentialRegistry } from '../vc/credential-registry.js';
+import { resolveDidDocument } from '../vc/did-resolve.js';
 import { PexDocumentLoader } from '../vc/document-loader.js';
 import {
   Ed25519VerificationKey2018Key,
@@ -18,6 +20,13 @@ import { EnvironmentConfig } from './config.js';
 import { fetchIPFSFile } from './ipfs-fetch.js';
 import { LmdbStorage } from './key-value-storage.js';
 import { log } from './logger.js';
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// As we are using ESM we can't use vanilla __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Load all required environment variables and return them in a single map. Also
@@ -51,26 +60,30 @@ export const responderKey = (
   env: EnvironmentConfig
 ): Ed25519VerificationKey2018Key => {
   const {
-    responder: { did, did_public_key_hex, did_private_key_hex, did_key_id },
+    responder: { did, edsa_key_config },
   } = env;
 
   return {
-    id: `${did}#${did_key_id}`,
+    id: edsa_key_config.key_id,
     controller: did,
     type: 'Ed25519VerificationKey2018',
-    privateKeyBase58: bs58.encode(Buffer.from(did_public_key_hex, 'hex')),
-    publicKeyBase58: bs58.encode(Buffer.from(did_private_key_hex, 'hex')),
+    privateKeyBase58: bs58.encode(
+      Buffer.from(edsa_key_config.private_key_hex, 'hex')
+    ),
+    publicKeyBase58: bs58.encode(
+      Buffer.from(edsa_key_config.public_key_hex, 'hex')
+    ),
   };
 };
 
 export const createServices = (configuration: EnvironmentConfig) => {
   const { responder } = configuration;
   const {
+    did,
     payer_account_id,
     payer_account_private_key,
-    did_public_key_hex,
-    did_private_key_hex,
-    hedera_encryption_private_key_hex,
+    payer_account_public_key,
+    edsa_key_config,
   } = responder;
   const client = _createHederaClient(
     payer_account_id,
@@ -93,8 +106,9 @@ export const createServices = (configuration: EnvironmentConfig) => {
     log
   );
 
-  const responderPublicKey = PublicKey.fromString(did_public_key_hex);
-  const responderPrivateKey = PrivateKey.fromString(did_private_key_hex);
+  const responderPublicKey = PublicKey.fromString(payer_account_public_key);
+  const responderPrivateKey = PrivateKey.fromString(payer_account_private_key);
+
   const writer = new HfsWriter(
     responderPublicKey,
     responderPrivateKey,
@@ -115,7 +129,61 @@ export const createServices = (configuration: EnvironmentConfig) => {
     log
   );
 
-  const hcsEncryption = new HcsEncryption(hedera_encryption_private_key_hex);
+  let edsaKeyConfig:
+    | {
+        id: string;
+        controller: string;
+        type: 'Ed25519VerificationKey2018';
+        privateKeyBase58: string;
+        publicKeyBase58: string;
+      }
+    | {
+        id: string;
+        controller: string;
+        type: 'Ed25519VerificationKey2020';
+        privateKeyMultibase: string;
+        publicKeyMultibase: string;
+      };
+
+  switch (edsa_key_config.type) {
+    case 'Ed25519VerificationKey2018':
+      edsaKeyConfig = {
+        id: edsa_key_config.key_id,
+        controller: did,
+        privateKeyBase58: bs58.encode(
+          Buffer.from(edsa_key_config.private_key_hex, 'hex')
+        ),
+        publicKeyBase58: bs58.encode(
+          Buffer.from(edsa_key_config.public_key_hex, 'hex')
+        ),
+        type: 'Ed25519VerificationKey2018',
+      };
+      break;
+    case 'Ed25519VerificationKey2020':
+      edsaKeyConfig = {
+        id: edsa_key_config.key_id,
+        controller: did,
+        privateKeyMultibase: base58btc.encode(
+          Buffer.from(edsa_key_config.private_key_hex, 'hex')
+        ),
+        publicKeyMultibase: base58btc.encode(
+          Buffer.from(edsa_key_config.public_key_hex, 'hex')
+        ),
+        type: 'Ed25519VerificationKey2020',
+      };
+      break;
+    default:
+      log.error(
+        `Invalid EDSA key type "${edsa_key_config.type}" - expected one of: ['Ed25519VerificationKey2018', 'Ed25519VerificationKey2020]`
+      );
+      process.exit(1);
+  }
+
+  const hcsEncryption = new HcsEncryption(
+    edsaKeyConfig,
+    resolveDidDocument,
+    log
+  );
 
   return {
     messenger,

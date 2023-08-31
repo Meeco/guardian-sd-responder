@@ -1,10 +1,14 @@
 {
   "responder": {
     "did": "did:key:1234",
-    "did_key_id": "did-root-key",
-    "did_public_key_hex": "1234abcdef",
-    "did_private_key_hex": "1234abcdef",
+    "edsa_key_config": {
+      "key_id": "123456#did-root-key",
+      "type": "Ed25519VerificationKey2020",
+      "public_key_hex": "1234abcdef",
+      "private_key_hex": "1234abcdef"
+    },
     "payer_account_id": "0.0.0",
+    "payer_account_public_key": "0123456789",
     "payer_account_private_key": "0123456789",
     "hedera_encryption_private_key_hex": "8851425a8dee",
     "topic_ids": ["0.0.0.0"],
@@ -13,7 +17,7 @@
   "guardians": [
     {
       "id": "did:key:1234",
-      "master_passphrase": "627903aa8b28bf6e0ae7bbca",
+      "passphrase_encryption_key": "627903aa8b28bf6e0ae7bbca",
       "topic_ids": ["0.0.0.0", "0.0.0.0"],
       "trusted_issuers": [
         {

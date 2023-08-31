@@ -68,10 +68,7 @@ describe('PresentationRequestHandler', () => {
     );
 
     encryption.encrypt.mockImplementation(
-      (data) => `encrypted:${Buffer.from(data).toString('utf-8')}`
-    );
-    encryption.generateNonce.mockReturnValue(
-      Buffer.from('example-nonce', 'utf-8')
+      (data) => `encrypted:${JSON.stringify(data)}`
     );
     (encryption as any)['publicKey'] = Buffer.from('example-public', 'utf-8');
   });
@@ -378,7 +375,6 @@ describe('PresentationRequestHandler', () => {
     verifier.verify.mockResolvedValue(true);
 
     await handler.handle(message);
-
     expect(logger.error).toHaveBeenCalledWith(
       new Error(
         'Writing file to HFS did not return a file id - can not respond'
@@ -466,8 +462,6 @@ describe('PresentationRequestHandler', () => {
           operation: MessageType.PRESENTATION_REQUEST,
           recipient_did: 'did:key:1234',
           request_file_id: '0.0.111',
-          request_file_nonce: 'example-request-nonce', // this would be base64 in a real example
-          request_ephem_public_key: 'example-requestor-public', // this would be base64 in a real example
         },
         501,
         timestamp
@@ -520,8 +514,6 @@ describe('PresentationRequestHandler', () => {
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
-        response_ephem_public_key: 'ZXhhbXBsZS1wdWJsaWM=', // 'example-public' in base64
-        response_file_nonce: 'ZXhhbXBsZS1ub25jZQ==', // 'example-nonce' in base64
         response_file_id: '0.0.5432',
       }),
       topicId: '0.0.1234',
@@ -536,15 +528,12 @@ describe('PresentationRequestHandler', () => {
     expect(verifier.verify).toHaveBeenCalledWith(
       authorizationDetails.verifiablePresentation
     );
-    expect(encryption.decrypt).toHaveBeenCalledWith(
-      'encrypted:data',
-      'example-request-nonce', // this would be base64 in a real example
-      'example-requestor-public' // this would be base64 in a real example
-    );
+    expect(encryption.decrypt).toHaveBeenCalledWith('encrypted:data');
     expect(encryption.encrypt).toHaveBeenCalledWith(
-      expect.anything(),
-      'ZXhhbXBsZS1ub25jZQ==', // 'example-nonce' in base64
-      'example-requestor-public' // This would be base64 in a real example
+      expect.objectContaining({
+        presentation: expect.anything(),
+      }),
+      'did:key:1234' // This would be base64 in a real example
     );
   });
 });
