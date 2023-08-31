@@ -7,12 +7,17 @@ export interface GuardianConfig {
   id: string;
   passphrase_encryption_key: string;
   topic_ids: string[];
-  trusted_issuers: TrustedIssuer[];
+  issued_credentials: IssuedCredential[];
 }
 
-export interface TrustedIssuer {
-  did: string;
-  credential_types: string[];
+export interface IssuedCredential {
+  credential_type: string;
+  accepted_authorization_credentials: AuthorizedCredential[];
+}
+
+export interface AuthorizedCredential {
+  credential_type: string;
+  accepted_issuer_dids: string[];
 }
 
 export interface KeyConfig {

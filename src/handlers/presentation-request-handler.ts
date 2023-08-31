@@ -48,6 +48,7 @@ export class PresentationRequestHandler
       message.contents as PresentationRequestMessage;
     const challenge = message.consensusTimestamp.toString();
 
+    // Is the message for this responder?
     if (recipient_did !== this.responderDid) {
       this.logger?.verbose(
         `Request is not intended for this responder - skipping`,
@@ -59,13 +60,13 @@ export class PresentationRequestHandler
       return;
     }
 
+    // Fetch and decrypt the presentation
     this.logger?.verbose(`Fetch request file "${request_file_id}"`);
     const contentsBuffer = await this.reader.readFile(request_file_id);
     const contents = Buffer.from(contentsBuffer).toString('utf-8');
 
-    this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
     let decrypted: Uint8Array;
-
+    this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
     try {
       decrypted = await this.encryption.decrypt(contents);
       this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
@@ -79,10 +80,9 @@ export class PresentationRequestHandler
         },
       });
     }
+
     let presentationRequest: PresentationRequest;
-
     this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
-
     try {
       presentationRequest = JSON.parse(
         Buffer.from(decrypted).toString('utf-8')
@@ -111,6 +111,21 @@ export class PresentationRequestHandler
     }
 
     const { verifiablePresentation } = authorization_details;
+
+    if (verifiablePresentation.holder != authorization_details.did) {
+      this.logger?.info(
+        `Presentation holder "${verifiablePresentation.holder}" did not match request authorization DID "${authorization_details.did}"`
+      );
+      return this.sendErrorResponse({
+        recipient_did: authorization_details.did,
+        request_id,
+        topicId: message.topicId,
+        error: {
+          code: 'AUTHORIZATION_MISMATCH',
+          message: `Credential holder did not match authorization DID.`,
+        },
+      });
+    }
 
     const credentials = Array.isArray(
       verifiablePresentation?.verifiableCredential
@@ -143,6 +158,7 @@ export class PresentationRequestHandler
       });
     }
 
+    // Verify the presentation of the requester
     const verified = await this.verifier.verify(verifiablePresentation);
     if (!verified) {
       return this.sendErrorResponse({
@@ -178,26 +194,22 @@ export class PresentationRequestHandler
         });
       }
 
-      for (const credential of credentials) {
-        const issuer = (credential?.issuer as any)?.id ?? credential?.issuer;
-        const isTrusted = await this.verifier.isTrusted(
-          credentialData.guardian_id,
-          issuer,
-          credential?.type ?? ['INVALID_CREDENTIAL_PROVIDED_DO_NOT_VERIFY']
-        );
-        if (!isTrusted) {
-          return this.sendErrorResponse({
-            request_id,
-            recipient_did: authorization_details.did,
-            topicId: message.topicId,
-            error: {
-              code: 'UNTRUSTED_ISSUER',
-              message: `Issuer "${issuer}" is not a trusted issuer for any credential types ${JSON.stringify(
-                credential!.type
-              )}.`,
-            },
-          });
-        }
+      this.logger?.verbose('Check credential trust');
+      const isTrusted = await this.verifier.isTrusted(
+        credentialData.guardian_id,
+        verifiablePresentation,
+        credentialData.credential
+      );
+      if (!isTrusted) {
+        return this.sendErrorResponse({
+          request_id,
+          recipient_did: authorization_details.did,
+          topicId: message.topicId,
+          error: {
+            code: 'UNAUTHORIZED_REQUEST',
+            message: `The submitted presentation is not authorized to disclose the requested credential.`,
+          },
+        });
       }
 
       this.logger?.verbose('Derive proof');
@@ -217,7 +229,7 @@ export class PresentationRequestHandler
 
       const encryptedResponse = await this.encryption.encrypt(
         signedPresentation,
-        recipient_did
+        authorization_details.did
       );
 
       this.logger?.verbose('Write encrypted presentation to HFS');

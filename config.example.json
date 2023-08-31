@@ -23,6 +23,7 @@
       "trusted_issuers": [
         {
           "did": "did:key:1234",
+          "holder_types": ["VerifiableCredential", "AlumniCredential"],
           "credential_types": ["40c3831a-e22e-421f-9af4-75448bb440a4"]
         }
       ]

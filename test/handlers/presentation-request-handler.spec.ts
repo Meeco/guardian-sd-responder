@@ -177,7 +177,44 @@ describe('PresentationRequestHandler', () => {
     });
   });
 
-  it('send an error if presentation is of a credential from an untrusted issuer', async () => {
+  it('send an error if presentation is of a credential which has a holder that does not match the authorization did', async () => {
+    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
+      createTopicMessage({
+        ...baseMessage,
+        recipient_did: 'did:key:1234',
+      }),
+      '0.0.1234'
+    )!;
+
+    mockDecryptedFileResponse(
+      JSON.stringify({
+        presentation_definition: presentationDefinition,
+        authorization_details: {
+          ...authorizationDetails,
+          did: 'did:key:something-else',
+        },
+      })
+    );
+    registry.fetchCredential.mockResolvedValue(credential);
+    verifier.verify.mockResolvedValue(true);
+    verifier.isTrusted.mockResolvedValue(false);
+
+    await handler.handle(message);
+
+    expect(messenger.send).toHaveBeenCalledWith({
+      message: JSON.stringify({
+        operation: MessageType.PRESENTATION_RESPONSE,
+        recipient_did: 'did:key:something-else',
+        error: {
+          code: 'AUTHORIZATION_MISMATCH',
+          message: `Credential holder did not match authorization DID.`,
+        },
+      }),
+      topicId: '0.0.1234',
+    });
+  });
+
+  it('send an error if presentation is of a credential that is not trusted for the requested credential', async () => {
     const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
         ...baseMessage,
@@ -203,10 +240,8 @@ describe('PresentationRequestHandler', () => {
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
         error: {
-          code: 'UNTRUSTED_ISSUER',
-          message: `Issuer "did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL" is not a trusted issuer for any credential types ${JSON.stringify(
-            ['VerifiableCredential', 'AlumniCredential']
-          )}.`,
+          code: 'UNAUTHORIZED_REQUEST',
+          message: `The submitted presentation is not authorized to disclose the requested credential.`,
         },
       }),
       topicId: '0.0.1234',
@@ -257,11 +292,7 @@ describe('PresentationRequestHandler', () => {
 
     mockDecryptedFileResponse(
       JSON.stringify({
-        authorization_details: {
-          did: 'did:key:4567',
-          presentationDefinition,
-          verifiablePresentation: authorizationDetails.verifiablePresentation,
-        },
+        authorization_details: authorizationDetails,
         presentation_definition: {},
       })
     );
@@ -279,7 +310,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:4567',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'MISSING_CREDENTIAL_ID',
           message: `Unable to determine credential ID from request.`,
@@ -303,11 +334,7 @@ describe('PresentationRequestHandler', () => {
 
     mockDecryptedFileResponse(
       JSON.stringify({
-        authorization_details: {
-          did: 'did:key:4567',
-          presentationDefinition,
-          verifiablePresentation: authorizationDetails.verifiablePresentation,
-        },
+        authorization_details: authorizationDetails,
         presentation_definition: presentationDefinition,
       })
     );
@@ -326,7 +353,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:4567',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'CREDENTIAL_NOT_FOUND',
           message: `Unable to fetch the credential "${credentialId}". Request can not be handled`,
@@ -417,9 +444,7 @@ describe('PresentationRequestHandler', () => {
     mockDecryptedFileResponse(
       JSON.stringify({
         presentation_definition: presentationDefinition,
-        authorization_details: {
-          did: 'did:key:request_did',
-        },
+        authorization_details: authorizationDetails,
       })
     );
     registry.fetchCredential.mockResolvedValue({
@@ -444,7 +469,7 @@ describe('PresentationRequestHandler', () => {
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
-        recipient_did: 'did:key:request_did',
+        recipient_did: authorizationDetails.did,
         error: {
           code: 'UNKNOWN_ERROR',
           message: `There was an unexpected problem processing the request`,
@@ -522,8 +547,8 @@ describe('PresentationRequestHandler', () => {
 
     expect(verifier.isTrusted).toHaveBeenCalledWith(
       'did:key:guardian_1',
-      'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
-      ['VerifiableCredential', 'AlumniCredential']
+      authorizationDetails.verifiablePresentation,
+      credential
     );
     expect(verifier.verify).toHaveBeenCalledWith(
       authorizationDetails.verifiablePresentation
@@ -533,7 +558,7 @@ describe('PresentationRequestHandler', () => {
       expect.objectContaining({
         presentation: expect.anything(),
       }),
-      'did:key:1234' // This would be base64 in a real example
+      authorizationDetails.did
     );
   });
 });

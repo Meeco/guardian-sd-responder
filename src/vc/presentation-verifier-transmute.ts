@@ -6,34 +6,13 @@ import { GuardianConfig } from '../util/config.js';
 import { PresentationVerifier } from './presentation-verifier.js';
 import { DocumentLoader, VerifiablePresentation } from './types.js';
 
-export class PresentationVerifierTransmute implements PresentationVerifier {
+export class PresentationVerifierTransmute extends PresentationVerifier {
   constructor(
     private readonly documentLoader: DocumentLoader,
-    private readonly guardians: GuardianConfig[],
-    private readonly logger?: Logger
-  ) {}
-
-  async isTrusted(
-    guardianId: string,
-    issuer: string,
-    credentialTypes: string | string[]
+    protected guardians: GuardianConfig[],
+    protected readonly logger?: Logger
   ) {
-    const guardian = this.guardians.find((item) => item.id === guardianId);
-
-    if (!guardian) return false;
-
-    const intersects = (arr1: any[], arr2: any[]) =>
-      !!arr1.find((item) => arr2.includes(item));
-
-    if (!Array.isArray(credentialTypes)) {
-      credentialTypes = [credentialTypes];
-    }
-
-    return !!guardian.trusted_issuers.find(
-      (item) =>
-        item.did === issuer &&
-        intersects(credentialTypes as string[], item.credential_types)
-    );
+    super(guardians, logger);
   }
 
   async verify(presentation: VerifiablePresentation) {
