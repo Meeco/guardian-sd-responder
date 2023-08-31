@@ -11,6 +11,7 @@ See `config.example.json` for an example configuration file.
 | Property                            | Description                                                                                      |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `did`                               | The did of the responder                                                                         |
+| `hedera_network`                    | One of `testnet` `previewnet` or `maintenet`                                                     |
 | `edsa_key_config`                   | DID key configuration for the Ed255192018 or Ed255192020 key for the responder did               |
 | `payer_account_id`                  | Hedera account id to use to pay for HCS/HFS transactions                                         |
 | `payer_account_public_key`          | Hedera account public key to use to pay for HCS/HFS transactions                                 |

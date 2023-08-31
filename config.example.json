@@ -1,6 +1,7 @@
 {
   "responder": {
     "did": "did:key:1234",
+    "hedera_network": "testnet",
     "edsa_key_config": {
       "key_id": "123456#did-root-key",
       "type": "Ed25519VerificationKey2020",
