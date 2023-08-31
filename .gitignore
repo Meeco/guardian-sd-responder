@@ -1,6 +1,8 @@
 .env
 node_modules
 
+/config.json
+
 dist
 # The lmdb key value database
 _data

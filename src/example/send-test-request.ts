@@ -8,7 +8,9 @@ import { log } from '../util/logger.js';
 // RESPONDER_TOPIC_IDS configuration.
 
 const environment = loadEnvironment();
-const { responderTopicsIds, responderDid } = environment;
+const {
+  responder: { did: responderDid, topic_ids: responderTopicsIds },
+} = environment;
 const { client } = createServices(environment);
 
 const { requestFileId } = await inquirer.prompt([

@@ -6,6 +6,7 @@ import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-
 
 import * as vc from '@digitalbazaar/vc';
 import { Logger } from 'winston';
+import { GuardianConfig } from '../util/config.js';
 import { PresentationVerifier } from './presentation-verifier.js';
 import {
   DocumentLoader,
@@ -16,12 +17,30 @@ import {
 export class PresentationVerifierDigitalBazaar implements PresentationVerifier {
   constructor(
     private readonly documentLoader: DocumentLoader,
+    private readonly guardians: GuardianConfig[],
     private readonly logger?: Logger
   ) {}
 
-  async isTrusted(issuer: string) {
-    return (
-      issuer === 'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL'
+  async isTrusted(
+    guardianId: string,
+    issuer: string,
+    credentialTypes: string | string[]
+  ) {
+    const guardian = this.guardians.find((item) => item.id === guardianId);
+
+    if (!guardian) return false;
+
+    const intersects = (arr1: any[], arr2: any[]) =>
+      !!arr1.find((item) => arr2.includes(item));
+
+    if (!Array.isArray(credentialTypes)) {
+      credentialTypes = [credentialTypes];
+    }
+
+    return !!guardian.trusted_issuers.find(
+      (item) =>
+        item.did === issuer &&
+        intersects(credentialTypes as string[], item.credential_types)
     );
   }
 

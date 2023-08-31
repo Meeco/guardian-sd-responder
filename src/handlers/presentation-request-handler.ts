@@ -126,21 +126,29 @@ export class PresentationRequestHandler
       ? verifiablePresentation?.verifiableCredential
       : [verifiablePresentation?.verifiableCredential];
 
-    for (const credential of credentials) {
-      const issuer = (credential?.issuer as any)?.id ?? credential?.issuer;
+    const descriptors = presentation_definition?.input_descriptors ?? [];
 
-      const isTrusted = await this.verifier.isTrusted(issuer);
-      if (!isTrusted) {
-        return this.sendErrorResponse({
-          request_id,
-          recipient_did: authorization_details.did,
-          topicId: message.topicId,
-          error: {
-            code: 'UNTRUSTED_ISSUER',
-            message: `Issuer "${issuer}" is not a trusted issuer.`,
-          },
-        });
-      }
+    let field: FieldV2 | undefined;
+
+    descriptors.find((descriptor) => {
+      field = descriptor?.constraints?.fields?.find(
+        (field) => field.path && field.path[0] === '$.id'
+      );
+      return field;
+    });
+
+    const credentialId = field?.filter?.const as string;
+
+    if (!credentialId) {
+      return this.sendErrorResponse({
+        recipient_did: authorization_details.did,
+        request_id,
+        topicId: message.topicId,
+        error: {
+          code: 'MISSING_CREDENTIAL_ID',
+          message: `Unable to determine credential ID from request.`,
+        },
+      });
     }
 
     const verified = await this.verifier.verify(verifiablePresentation);
@@ -157,37 +165,13 @@ export class PresentationRequestHandler
     }
 
     try {
-      const descriptors = presentation_definition?.input_descriptors ?? [];
-
-      let field: FieldV2 | undefined;
-
-      descriptors.find((descriptor) => {
-        field = descriptor?.constraints?.fields?.find(
-          (field) => field.path && field.path[0] === '$.id'
-        );
-        return field;
-      });
-
-      const credentialId = field?.filter?.const;
-
-      if (!credentialId) {
-        return this.sendErrorResponse({
-          recipient_did: authorization_details.did,
-          request_id,
-          topicId: message.topicId,
-          error: {
-            code: 'MISSING_CREDENTIAL_ID',
-            message: `Unable to determine credential ID from request.`,
-          },
-        });
-      }
-
-      let credential: VerifiableCredential;
+      let credentialData: {
+        credential: VerifiableCredential;
+        guardian_id: string;
+      };
 
       try {
-        credential = await this.registry.fetchCredential(
-          credentialId as string
-        );
+        credentialData = await this.registry.fetchCredential(credentialId);
       } catch (err) {
         this.logger?.error(err);
 
@@ -202,10 +186,32 @@ export class PresentationRequestHandler
         });
       }
 
+      for (const credential of credentials) {
+        const issuer = (credential?.issuer as any)?.id ?? credential?.issuer;
+        const isTrusted = await this.verifier.isTrusted(
+          credentialData.guardian_id,
+          issuer,
+          credential?.type ?? ['INVALID_CREDENTIAL_PROVIDED_DO_NOT_VERIFY']
+        );
+        if (!isTrusted) {
+          return this.sendErrorResponse({
+            request_id,
+            recipient_did: authorization_details.did,
+            topicId: message.topicId,
+            error: {
+              code: 'UNTRUSTED_ISSUER',
+              message: `Issuer "${issuer}" is not a trusted issuer for any credential types ${JSON.stringify(
+                credential!.type
+              )}.`,
+            },
+          });
+        }
+      }
+
       this.logger?.verbose('Derive proof');
 
       const derivedProof = await this.bbsBlsService.createProof(
-        credential,
+        credentialData.credential,
         presentation_definition
       );
 
