@@ -84,7 +84,7 @@ export class HcsEncryption {
     return encrypted;
   }
 
-  async decrypt(jwe: string) {
+  async decrypt(jwe: any) {
     try {
       const cipher = new Cipher();
       const keyAgreementKey = await this.deriveX25519KeyPair();

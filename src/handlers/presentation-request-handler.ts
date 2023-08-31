@@ -44,11 +44,11 @@ export class PresentationRequestHandler
   async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { recipient_did, request_file_id, request_id } =
+    const { recipient_did, responder_did, request_file_id, request_id } =
       message.contents as PresentationRequestMessage;
     const challenge = message.consensusTimestamp.toString();
 
-    if (recipient_did !== this.responderDid) {
+    if (responder_did !== this.responderDid) {
       this.logger?.verbose(
         `Request is not intended for this responder - skipping`,
         {
@@ -60,14 +60,13 @@ export class PresentationRequestHandler
     }
 
     this.logger?.verbose(`Fetch request file "${request_file_id}"`);
-    const contentsBuffer = await this.reader.readFile(request_file_id);
-    const contents = Buffer.from(contentsBuffer).toString('utf-8');
+    const contents = await this.reader.readFileAsJson(request_file_id);
 
     this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
-    let decrypted: Uint8Array;
+    let presentationRequest: PresentationRequest;
 
     try {
-      decrypted = await this.encryption.decrypt(contents);
+      presentationRequest = await this.encryption.decrypt(contents);
       this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
     } catch (err) {
       return this.sendErrorResponse({
@@ -79,24 +78,8 @@ export class PresentationRequestHandler
         },
       });
     }
-    let presentationRequest: PresentationRequest;
 
     this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
-
-    try {
-      presentationRequest = JSON.parse(
-        Buffer.from(decrypted).toString('utf-8')
-      ) as PresentationRequest;
-    } catch (err) {
-      return this.sendErrorResponse({
-        request_id,
-        topicId: message.topicId,
-        error: {
-          code: 'FILE_PARSE_FAILED',
-          message: `Unable to parse the request file as valid json.`,
-        },
-      });
-    }
 
     this.logger?.debug(presentationRequest);
 
@@ -183,7 +166,9 @@ export class PresentationRequestHandler
         const isTrusted = await this.verifier.isTrusted(
           credentialData.guardian_id,
           issuer,
-          credential?.type ?? ['INVALID_CREDENTIAL_PROVIDED_DO_NOT_VERIFY']
+          credentialData.credential?.credentialSubject.type ?? [
+            'INVALID_CREDENTIAL_PROVIDED_DO_NOT_VERIFY',
+          ]
         );
         if (!isTrusted) {
           return this.sendErrorResponse({
@@ -221,7 +206,9 @@ export class PresentationRequestHandler
       );
 
       this.logger?.verbose('Write encrypted presentation to HFS');
-      const fileId = await this.writer.writeFile(encryptedResponse);
+      const fileId = await this.writer.writeFile(
+        JSON.stringify(encryptedResponse)
+      );
 
       if (!fileId) {
         throw new Error(

@@ -34,8 +34,8 @@ export interface PresentationRequestMessage {
   operation: MessageType.PRESENTATION_REQUEST;
   request_id: string;
   recipient_did: string;
+  responder_did: string;
   request_file_id: string;
-  version: string;
 }
 
 type SuccessResponse = {

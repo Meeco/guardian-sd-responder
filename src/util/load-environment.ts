@@ -13,6 +13,7 @@ import { resolveDidDocument } from '../vc/did-resolve.js';
 import { PexDocumentLoader } from '../vc/document-loader.js';
 import {
   Ed25519VerificationKey2018Key,
+  Ed25519VerificationKey2020Key,
   PresentationSigner,
 } from '../vc/presentation-signer.js';
 import { PresentationVerifierDigitalBazaar } from '../vc/presentation-verifier-digitalbazaar.js';
@@ -58,22 +59,34 @@ const _createHederaClient = (accountId: string, accountPrivateKey: string) => {
 
 export const responderKey = (
   env: EnvironmentConfig
-): Ed25519VerificationKey2018Key => {
+): Ed25519VerificationKey2018Key | Ed25519VerificationKey2020Key => {
   const {
     responder: { did, edsa_key_config },
   } = env;
 
-  return {
-    id: edsa_key_config.key_id,
-    controller: did,
-    type: 'Ed25519VerificationKey2018',
-    privateKeyBase58: bs58.encode(
-      Buffer.from(edsa_key_config.private_key_hex, 'hex')
-    ),
-    publicKeyBase58: bs58.encode(
-      Buffer.from(edsa_key_config.public_key_hex, 'hex')
-    ),
-  };
+  return edsa_key_config.type == 'Ed25519VerificationKey2018'
+    ? ({
+        id: edsa_key_config.key_id,
+        controller: did,
+        type: 'Ed25519VerificationKey2018',
+        privateKeyBase58: bs58.encode(
+          Buffer.from(edsa_key_config.private_key_hex, 'hex')
+        ),
+        publicKeyBase58: bs58.encode(
+          Buffer.from(edsa_key_config.public_key_hex, 'hex')
+        ),
+      } as Ed25519VerificationKey2018Key)
+    : ({
+        id: edsa_key_config.key_id,
+        controller: did,
+        type: edsa_key_config.type,
+        privateKeyMultibase: base58btc.encode(
+          Buffer.from(edsa_key_config.private_key_hex, 'hex')
+        ),
+        publicKeyMultibase: base58btc.encode(
+          Buffer.from(edsa_key_config.public_key_hex, 'hex')
+        ),
+      } as Ed25519VerificationKey2020Key);
 };
 
 export const createServices = (configuration: EnvironmentConfig) => {
