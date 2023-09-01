@@ -62,13 +62,12 @@ export class PresentationRequestHandler
 
     // Fetch and decrypt the presentation
     this.logger?.verbose(`Fetch request file "${request_file_id}"`);
-    const contentsBuffer = await this.reader.readFile(request_file_id);
-    const contents = Buffer.from(contentsBuffer).toString('utf-8');
+    const contents = await this.reader.readFileAsJson(request_file_id);
 
-    let decrypted: Uint8Array;
+    let presentationRequest: PresentationRequest;
     this.logger?.verbose(`Decrypt request file "${request_file_id}"`);
     try {
-      decrypted = await this.encryption.decrypt(contents);
+      presentationRequest = await this.encryption.decrypt(contents);
       this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
     } catch (err) {
       return this.sendErrorResponse({
@@ -77,23 +76,6 @@ export class PresentationRequestHandler
         error: {
           code: 'FILE_DECRYPTION_FAILED',
           message: `Unable to decrypt the request file.`,
-        },
-      });
-    }
-
-    let presentationRequest: PresentationRequest;
-    this.logger?.verbose(`Parse decrypted request file "${request_file_id}"`);
-    try {
-      presentationRequest = JSON.parse(
-        Buffer.from(decrypted).toString('utf-8')
-      ) as PresentationRequest;
-    } catch (err) {
-      return this.sendErrorResponse({
-        request_id,
-        topicId: message.topicId,
-        error: {
-          code: 'FILE_PARSE_FAILED',
-          message: `Unable to parse the request file as valid json.`,
         },
       });
     }
@@ -227,7 +209,9 @@ export class PresentationRequestHandler
       );
 
       this.logger?.verbose('Write encrypted presentation to HFS');
-      const fileId = await this.writer.writeFile(encryptedResponse);
+      const fileId = await this.writer.writeFile(
+        JSON.stringify(encryptedResponse)
+      );
 
       if (!fileId) {
         throw new Error(
