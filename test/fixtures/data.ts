@@ -111,7 +111,7 @@ export const presentationDefinition: PresentationDefinitionV2 = {
 };
 
 export const authorizationDetails = {
-  did: 'did:key:z6MkugGg1NB8z7uqLsigSGicoxPsMBaBi9L6x7zPSLqw76R1',
+  did: 'did:key:z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
   verifiablePresentation: {
     '@context': ['https://www.w3.org/2018/credentials/v1'],
     type: ['VerifiablePresentation'],
