@@ -44,11 +44,11 @@ export class PresentationRequestHandler
   async handle(message: DecodedMessage<PresentationRequestMessage>) {
     this.logger?.verbose(`Received "${this.operation}"`);
 
-    const { recipient_did, responder_did, request_file_id, request_id } =
+    const { recipient_did, request_file_id, request_id } =
       message.contents as PresentationRequestMessage;
     const challenge = message.consensusTimestamp.toString();
 
-    if (responder_did !== this.responderDid) {
+    if (recipient_did !== this.responderDid) {
       this.logger?.verbose(
         `Request is not intended for this responder - skipping`,
         {
