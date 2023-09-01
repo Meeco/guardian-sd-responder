@@ -74,7 +74,7 @@ describe('PresentationRequestHandler', () => {
   });
 
   function mockDecryptedFileResponse(response: any) {
-    reader.readFile.mockResolvedValue(`encrypted:data`);
+    reader.readFileAsJson.mockResolvedValue(`encrypted:data`);
     encryption.decrypt.mockReturnValue(response);
   }
 
@@ -95,7 +95,7 @@ describe('PresentationRequestHandler', () => {
         responder_did: 'did:key:1234',
       }
     );
-    expect(reader.readFile).not.toHaveBeenCalled();
+    expect(reader.readFileAsJson).not.toHaveBeenCalled();
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
 
-    expect(reader.readFile).toHaveBeenCalledWith('0.0.1234');
+    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    reader.readFile.mockResolvedValue(Buffer.from([0]));
+    reader.readFileAsJson.mockResolvedValue(Buffer.from([0]));
     encryption.decrypt.mockImplementation(() => {
       throw new Error('Decryption failed');
     });
@@ -152,31 +152,6 @@ describe('PresentationRequestHandler', () => {
     });
   });
 
-  it('send an error if decrypted file can not be parsed', async () => {
-    const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
-      createTopicMessage({
-        ...baseMessage,
-        recipient_did: 'did:key:1234',
-      }),
-      '0.0.1234'
-    )!;
-
-    mockDecryptedFileResponse('not valid json');
-
-    await handler.handle(message);
-
-    expect(messenger.send).toHaveBeenCalledWith({
-      message: JSON.stringify({
-        operation: MessageType.PRESENTATION_RESPONSE,
-        error: {
-          code: 'FILE_PARSE_FAILED',
-          message: `Unable to parse the request file as valid json.`,
-        },
-      }),
-      topicId: '0.0.1234',
-    });
-  });
-
   it('send an error if presentation is of a credential which has a holder that does not match the authorization did', async () => {
     const message = DecodedMessage.fromTopicMessage<PresentationRequestMessage>(
       createTopicMessage({
@@ -186,15 +161,13 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: {
-          ...authorizationDetails,
-          did: 'did:key:something-else',
-        },
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: {
+        ...authorizationDetails,
+        did: 'did:key:something-else',
+      },
+    });
     registry.fetchCredential.mockResolvedValue(credential);
     verifier.verify.mockResolvedValue(true);
     verifier.isTrusted.mockResolvedValue(false);
@@ -223,12 +196,10 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: authorizationDetails,
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: authorizationDetails,
+    });
     registry.fetchCredential.mockResolvedValue(credential);
     verifier.verify.mockResolvedValue(true);
     verifier.isTrusted.mockResolvedValue(false);
@@ -257,12 +228,10 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: authorizationDetails,
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: authorizationDetails,
+    });
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(false);
 
@@ -290,12 +259,10 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        authorization_details: authorizationDetails,
-        presentation_definition: {},
-      })
-    );
+    mockDecryptedFileResponse({
+      authorization_details: authorizationDetails,
+      presentation_definition: {},
+    });
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(true);
 
@@ -304,7 +271,7 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).toHaveBeenCalledWith(
       `Unable to determine credential ID from request.`
     );
-    expect(reader.readFile).toHaveBeenCalledWith('0.0.1234');
+    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.1234');
     expect(registry.fetchCredential).not.toHaveBeenCalled();
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).toHaveBeenCalledWith({
@@ -332,12 +299,10 @@ describe('PresentationRequestHandler', () => {
       '0.0.1234'
     )!;
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        authorization_details: authorizationDetails,
-        presentation_definition: presentationDefinition,
-      })
-    );
+    mockDecryptedFileResponse({
+      authorization_details: authorizationDetails,
+      presentation_definition: presentationDefinition,
+    });
     verifier.isTrusted.mockResolvedValue(true);
     verifier.verify.mockResolvedValue(true);
     registry.fetchCredential.mockRejectedValue(new Error('Test error'));
@@ -347,7 +312,7 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).toHaveBeenCalledWith(
       `Unable to fetch the credential "${credentialId}". Request can not be handled`
     );
-    expect(reader.readFile).toHaveBeenCalledWith('0.0.111');
+    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.111');
     expect(registry.fetchCredential).toHaveBeenCalledWith(credentialId);
     expect(bbsBls.createProof).not.toHaveBeenCalled();
     expect(messenger.send).toHaveBeenCalledWith({
@@ -386,12 +351,10 @@ describe('PresentationRequestHandler', () => {
       presentation: selectiveCredential,
     };
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: authorizationDetails,
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: authorizationDetails,
+    });
     registry.fetchCredential.mockResolvedValue(credential);
     messenger.send.mockResolvedValue(null);
     writer.writeFile.mockResolvedValue(null);
@@ -441,12 +404,10 @@ describe('PresentationRequestHandler', () => {
       verifiablePresentation: authorizationDetails.verifiablePresentation,
     };
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: authorizationDetails,
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: authorizationDetails,
+    });
     registry.fetchCredential.mockResolvedValue({
       guardian_id: 'did:key:guardian_1',
       credential,
@@ -497,12 +458,10 @@ describe('PresentationRequestHandler', () => {
       presentation: selectiveCredential,
     };
 
-    mockDecryptedFileResponse(
-      JSON.stringify({
-        presentation_definition: presentationDefinition,
-        authorization_details: authorizationDetails,
-      })
-    );
+    mockDecryptedFileResponse({
+      presentation_definition: presentationDefinition,
+      authorization_details: authorizationDetails,
+    });
     registry.fetchCredential.mockResolvedValue({
       guardian_id: 'did:key:guardian_1',
       credential,
@@ -521,7 +480,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
 
-    expect(reader.readFile).toHaveBeenCalledWith('0.0.111');
+    expect(reader.readFileAsJson).toHaveBeenCalledWith('0.0.111');
     expect(registry.fetchCredential).toHaveBeenCalledWith(credentialId);
     expect(bbsBls.createProof).toHaveBeenCalledWith(
       credential,
@@ -532,8 +491,9 @@ describe('PresentationRequestHandler', () => {
       selectiveCredential,
       timestamp.toString() // consensus timestamp of the message is the challenge
     );
+
     expect(writer.writeFile).toHaveBeenCalledWith(
-      `encrypted:${JSON.stringify(presentation)}`
+      JSON.stringify(`encrypted:${JSON.stringify(presentation)}`)
     );
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
