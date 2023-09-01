@@ -127,12 +127,6 @@ export class PresentationRequestHandler
       });
     }
 
-    const credentials = Array.isArray(
-      verifiablePresentation?.verifiableCredential
-    )
-      ? verifiablePresentation?.verifiableCredential
-      : [verifiablePresentation?.verifiableCredential];
-
     const descriptors = presentation_definition?.input_descriptors ?? [];
 
     let field: FieldV2 | undefined;
