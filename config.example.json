@@ -20,11 +20,15 @@
       "id": "did:key:1234",
       "passphrase_encryption_key": "627903aa8b28bf6e0ae7bbca",
       "topic_ids": ["0.0.0.0", "0.0.0.0"],
-      "trusted_issuers": [
+      "issued_credentials": [
         {
-          "did": "did:key:1234",
-          "holder_types": ["VerifiableCredential", "AlumniCredential"],
-          "credential_types": ["40c3831a-e22e-421f-9af4-75448bb440a4"]
+          "credential_type": "MyEnviroCredential",
+          "accepted_authorization_credentials": [
+            {
+              "credential_type": "EnviroAuditor",
+              "accepted_issuer_dids": ["did:key:abcd"]
+            }
+          ]
         }
       ]
     }

@@ -40,10 +40,10 @@ For `issued_credentials`:
 
 For `accepted_authorization_credentials`:
 
-| Property          | Description                                                                             |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| `credential_type` | Holders of these credential types can request details for the parent `credential_types` |
-| `key`             | The issued authorization credential must be from one of these issuers to qualify        |
+| Property               | Description                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `credential_type`      | Holders of these credential types can request details for the parent `credential_types` |
+| `accepted_issuer_dids` | The issued authorization credential must be from one of these issuers to qualify        |
 
 Note that in order to be authorized, only one condition match must be met in order to be authorized. That is, as long as one authorization credential is presented that:
 
