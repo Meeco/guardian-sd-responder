@@ -61,6 +61,46 @@ It can be run locally with node > 18:
 
 There is also a provided Dockerfile to build and run the responder as a container.
 
+## Registering Credentials
+
+Running responders will listen to `guardians.topic_ids` for credential registration messages. Registration messages are expected to have the following format:
+
+```
+operation_id: string,             // Should be "register-credentiak"
+guardian_id: string,              // ID of the guardian registering the credential
+vc_id: string,                    // ID of the credential being registered
+ipfs_cid: string,                 // IPFS CID of the encrypted credential on IPFS
+encrypted_passphrase: string,     // Passphrase for the encrypted credential, encrypted with `guardians.passphrase_encryption_key` for the guardian
+```
+
+Example of encrypting a credential and the passphrase for the credential:
+
+```ts
+import {
+  CipherStrategy,
+  encryptWithKeyDerivedFromString,
+  utf8ToBytes,
+} from '@meeco/cryppo';
+import { randomBytes } from 'crypto';
+
+const passphrase = randomBytes(48).toString('hex');
+
+// Encrypt the credential
+const encryptedDocument = await encryptWithKeyDerivedFromString({
+  passphrase: passphrase,
+  data: utf8ToBytes(JSON.stringify(signedDocument)),
+  strategy: CipherStrategy.AES_GCM,
+  serializationVersion: 'latest_version' as any,
+});
+
+// Encrypt the passphrase for  the credential
+const encryptedPassphrase = await encryptWithKeyDerivedFromString({
+  data: Buffer.from(passphrase, 'utf-8'),
+  strategy: CipherStrategy.AES_GCM,
+  passphrase: passphraseEncryptionPassphrase,
+});
+```
+
 ## Response Error Codes
 
 When handling a `presentation-request` message, the responder may return one of several error codes in the `presentation-response`.
