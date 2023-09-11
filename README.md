@@ -66,11 +66,21 @@ There is also a provided Dockerfile to build and run the responder as a containe
 Running responders will listen to `guardians.topic_ids` for credential registration messages. Registration messages are expected to have the following format:
 
 ```
-operation_id: string,             // Should be "register-credentiak"
+operation_id: string,             // Should be "register-credential"
 guardian_id: string,              // ID of the guardian registering the credential
 vc_id: string,                    // ID of the credential being registered
 ipfs_cid: string,                 // IPFS CID of the encrypted credential on IPFS
 encrypted_passphrase: string,     // Passphrase for the encrypted credential, encrypted with `guardians.passphrase_encryption_key` for the guardian
+```
+
+```jsonc
+{
+  "operation_id": "register-credential",
+  "guardian_id": "a3f6af0f-19f4-40e1-80a6-4ca9eebcf892",
+  "vc_id": "urn:uuid:6871fc25-0b80-421c-ae1a-457107a6aadf",
+  "ipfs_cid": "bafybeifkz53amsv53iyojtjhi5rayym6jtavxipsmimpbrtexs53kofvqy/credential.json",
+  "encrypted_pasphrase": "Aes256Gcm.2KrGWIP9TJmHqfnglKdYn8FJu7ZuFHk-ZZPeA--wjwoOowIJBNAaG6mco45YlzAshzXPxOb86_3d0CnnnsgaqqqQrwFDnJiihCb_a3yHmu-afMwoFhru2-QWHrBHGLQI.QUAAAAAFaXYADAAAAACr5b68bp29WIxyfTcFYXQAEAAAAAD-rpHiK0hZEKFHqGnzucIvAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAAARqZHS23aNrOZ8lPaQ6nxBMdC1UBBpAB1QAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA"
+}
 ```
 
 Example of encrypting a credential and the passphrase for the credential:
@@ -99,6 +109,64 @@ const encryptedPassphrase = await encryptWithKeyDerivedFromString({
   strategy: CipherStrategy.AES_GCM,
   passphrase: passphraseEncryptionPassphrase,
 });
+```
+
+## Example Query/Response/Request/Response Flow
+
+### Presentation Query
+
+```jsonc
+{
+  "operation": "presentation-query",
+  // This allows tying the query response to the query
+  "request_id": "0a40262e-e100-47b3-a69a-3824e867e0a7",
+  // ID of the credential being requested
+  "vc_id": "urn:uuid:a67a8607-0e2a-4818-8a75-f64743ea8dc2",
+  // DID of the requester
+  "requester_did": "did:hedera:testnet:z6MkmELdkLPDgwzwXSm166M2ut4i2M9GHALUiYvZBz15YzWG_0.0.1136547",
+  "limit_hbar": 1
+}
+```
+
+### Query Response
+
+```jsonc
+{
+  "operation": "query-response",
+  // Responding to the original query ID
+  "request_id": "0a40262e-e100-47b3-a69a-3824e867e0a7",
+  // There may be multiple query responses on the topic, each with a different responder DID. This is also used for encryption.
+  "responder_did": "did:hedera:testnet:z6Mkt3X4e2hBgobfouBuy2DmpG4zEdSeFCjwCkK19e2iRjYs_0.0.893331",
+  "offer_hbar": 0
+}
+```
+
+### Presentation Request
+
+```jsonc
+{
+  "operation": "presentation-request",
+  // Targeting a specific responder from the `query-response` messages seen
+  "recipient_did": "did:hedera:testnet:z6Mkt3X4e2hBgobfouBuy2DmpG4zEdSeFCjwCkK19e2iRjYs_0.0.893331",
+  // Allows tying the presentation response to the request
+  "request_id": "8a6a42ea-4b47-43bf-9431-f28c33ece38a",
+  // HFS file id of the request JSON, encrypted with the responder_did from the query response
+  "request_file_id": "0.0.1144002"
+}
+```
+
+### Presentation Response
+
+```jsonc
+{
+  "operation": "presentation-response",
+  // The Responding to the original request ID
+  "request_id": "8a6a42ea-4b47-43bf-9431-f28c33ece38a",
+  // Intended recipient
+  "recipient_did": "did:hedera:testnet:z6MkmELdkLPDgwzwXSm166M2ut4i2M9GHALUiYvZBz15YzWG_0.0.1136547",
+  // HFS file ID of the response JSON, encrypted with the DID in the request file authorization JSON
+  "response_file_id": "0.0.1144004"
+}
 ```
 
 ## Response Error Codes
