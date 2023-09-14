@@ -25,6 +25,10 @@ export class HcsEncryption {
     protected readonly logger?: Logger
   ) {}
 
+  public get publicKeyId() {
+    return this.edsaKeyConfig.id;
+  }
+
   private async deriveX25519KeyPair() {
     const responderEdKey =
       this.edsaKeyConfig.type === 'Ed25519VerificationKey2018'

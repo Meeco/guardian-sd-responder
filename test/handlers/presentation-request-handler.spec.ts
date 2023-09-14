@@ -70,7 +70,7 @@ describe('PresentationRequestHandler', () => {
     encryption.encrypt.mockImplementation(
       (data) => `encrypted:${JSON.stringify(data)}`
     );
-    (encryption as any)['publicKey'] = Buffer.from('example-public', 'utf-8');
+    (encryption as any)['publicKeyId'] = 'example-public';
   });
 
   function mockDecryptedFileResponse(response: any) {
@@ -500,6 +500,7 @@ describe('PresentationRequestHandler', () => {
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
         response_file_id: '0.0.5432',
+        response_file_encrypted_key_id: 'example-public',
       }),
       topicId: '0.0.1234',
     });

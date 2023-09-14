@@ -26,7 +26,7 @@ describe('PresentationQueryHandler', () => {
     registry = createSpyObject();
     encryption = createSpyObject();
 
-    (encryption as any)['publicKey'] = 'example-public';
+    (encryption as any)['publicKeyId'] = 'example-public';
 
     handler = new PresentationQueryHandler(
       'did:key:1234',
@@ -61,6 +61,7 @@ describe('PresentationQueryHandler', () => {
         operation: MessageType.QUERY_RESPONSE,
         request_id: '123',
         responder_did: 'did:key:1234',
+        response_file_encrypted_key_id: 'example-public',
         offer_hbar: 0,
       }),
       topicId: '0.0.1234',

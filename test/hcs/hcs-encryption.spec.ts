@@ -71,6 +71,30 @@ describe('hcs encryption', () => {
     verificationMethod: undefined,
   };
 
+  it('returns the public key to use for encryption', async () => {
+    const mockResolver = (did: string) => {
+      if (did === requestorDidDoc.id) return requestorDidDoc;
+      if (did === responderDidDoc.id) return responderDidDoc;
+      throw new Error(`Could not resolve did "${did}"`);
+    };
+
+    const responder = new HcsEncryption(
+      {
+        id: responderDidDoc.verificationMethod[0].id,
+        controller: responderDidDoc.id,
+        type: 'Ed25519VerificationKey2020',
+        publicKeyMultibase:
+          responderDidDoc.verificationMethod[0].publicKeyMultibase!,
+        privateKeyMultibase: responderPrivateKeyMultibase,
+      },
+      mockResolver
+    );
+
+    expect(responder.publicKeyId).toEqual(
+      'did:hedera:testnet:z6MkokyNgNyTsUFpzZhdViALRgZ2BQ9PhxYUchFU4nTir91q_0.0.0#did-root-key'
+    );
+  });
+
   it('encrypts and decrypts a message (both directions)', async () => {
     const mockResolver = (did: string) => {
       if (did === requestorDidDoc.id) return requestorDidDoc;

@@ -224,6 +224,7 @@ export class PresentationRequestHandler
         request_id,
         recipient_did: authorization_details.did,
         response_file_id: fileId.toString(),
+        response_file_encrypted_key_id: this.encryption.publicKeyId,
       };
 
       this.logger?.verbose(`Sending response "${response.operation}"`);

@@ -51,6 +51,7 @@ export class PresentationQueryHandler
       operation: MessageType.QUERY_RESPONSE,
       request_id,
       responder_did: this.responderDid,
+      response_file_encrypted_key_id: this.encryption.publicKeyId,
       offer_hbar: 0,
     };
 
