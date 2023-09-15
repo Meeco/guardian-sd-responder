@@ -1,7 +1,7 @@
-import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020';
 import { Cipher } from '@digitalbazaar/minimal-cipher';
 import { X25519KeyAgreementKey2020 } from '@digitalbazaar/x25519-key-agreement-key-2020';
 import { Logger } from 'winston';
+import { buildEd25519VerificationKey2020 } from '../util/key-data.js';
 import { resolveDidDocument } from '../vc/did-resolve.js';
 
 export class HcsEncryption {
@@ -23,19 +23,27 @@ export class HcsEncryption {
         },
     private didResolver: (did: string) => any = resolveDidDocument,
     protected readonly logger?: Logger
-  ) {}
+  ) {
+    if (
+      !this.edsaKeyConfig.id ||
+      !this.edsaKeyConfig.controller ||
+      !this.edsaKeyConfig.type
+    ) {
+      logger?.error(
+        'Bad key config - check edsaKeyConfig has all required properties'
+      );
+      throw new Error('Missing one or more EDSA key config properties');
+    }
+  }
 
   public get publicKeyId() {
     return this.edsaKeyConfig.id;
   }
 
   private async deriveX25519KeyPair() {
-    const responderEdKey =
-      this.edsaKeyConfig.type === 'Ed25519VerificationKey2018'
-        ? await Ed25519VerificationKey2020.fromEd25519VerificationKey2018({
-            keyPair: this.edsaKeyConfig,
-          })
-        : await Ed25519VerificationKey2020.from(this.edsaKeyConfig);
+    const responderEdKey = await buildEd25519VerificationKey2020(
+      this.edsaKeyConfig
+    );
 
     return X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
       keyPair: responderEdKey,
@@ -55,20 +63,7 @@ export class HcsEncryption {
       throw new Error('No applicable keys found on did document');
     }
 
-    let keyPair;
-    switch (key.type) {
-      case 'Ed25519VerificationKey2018':
-        keyPair =
-          await Ed25519VerificationKey2020.fromEd25519VerificationKey2018({
-            keyPair: key,
-          });
-        break;
-      case 'Ed25519VerificationKey2020':
-        keyPair = await Ed25519VerificationKey2020.from(key);
-        break;
-      default:
-        throw new Error(`Key type "${key.type}" not supported for encryption`);
-    }
+    const keyPair = await buildEd25519VerificationKey2020(key);
 
     const keyAgreement =
       await X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({

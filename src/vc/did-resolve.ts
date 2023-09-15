@@ -8,5 +8,7 @@ const HEDERA_RESOLVER_HOST =
  * Since universal resolvers don't yet typically support Hedera DIDs, assumes a
  * universal did resolver running at localhost:5000 that will resolve Hedera DIDs and other DIDs
  */
-export const resolveDidDocument = (did: string) =>
-  fetchJson(`${HEDERA_RESOLVER_HOST}/${did}`);
+export const resolveDidDocument = (did: string) => {
+  const [root] = did.split('#');
+  return fetchJson(`${HEDERA_RESOLVER_HOST}/${root}`);
+};

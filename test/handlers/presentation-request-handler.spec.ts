@@ -366,9 +366,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
     expect(logger.error).toHaveBeenCalledWith(
-      new Error(
-        'Writing file to HFS did not return a file id - can not respond'
-      )
+      'Writing file to HFS did not return a file id - can not respond'
     );
 
     expect(messenger.send).toHaveBeenCalledWith({
@@ -425,7 +423,7 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).toHaveBeenCalledWith(
       `There was an unexpected problem processing the request`
     );
-    expect(logger.error).toHaveBeenCalledWith(new Error('Test error'));
+    expect(logger.error).toHaveBeenCalledWith('Test error');
 
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({

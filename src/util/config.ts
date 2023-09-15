@@ -21,7 +21,7 @@ export interface AuthorizedCredential {
 }
 
 export interface KeyConfig {
-  key_id: string;
+  id: string;
   type: string;
   public_key_hex: string;
   private_key_hex: string;

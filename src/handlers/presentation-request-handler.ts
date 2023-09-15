@@ -237,7 +237,12 @@ export class PresentationRequestHandler
 
       this.logger?.info(`Processing "${this.operation}" complete`);
     } catch (err) {
-      this.logger?.error(err);
+      if (err instanceof Error) {
+        this.logger?.error(err.message);
+        this.logger?.error(err.stack);
+      } else {
+        this.logger?.error(err);
+      }
       return this.sendErrorResponse({
         recipient_did: authorization_details.did,
         request_id,
