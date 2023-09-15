@@ -1,3 +1,5 @@
+# Getting Started Guide 
+
 - [Setup](#setup)
   - [Participating Parties](#participating-parties)
   - [Setting Up Repositories](#setting-up-repositories)
@@ -20,9 +22,9 @@
   - [Presentation Request](#presentation-request)
   - [Presentation Response](#presentation-response)
 
-# Setup
+# Overview and Environment
 
-In order to complete this example, we need a Hedera payer account from the [Hedera Portal](https://portal.hedera.com/).
+In order to complete this example, we need a Hedera payer account. A Testnet account can be created by registering via the [Hedera Portal](https://portal.hedera.com/).
 
 This document assumes you have a WalletConnect app (such as [Blade Wallet](https://bladewallet.io/)) installed with your account imported. Setting this up is outside the scope of this document.
 
@@ -30,38 +32,51 @@ This document assumes you have a WalletConnect app (such as [Blade Wallet](https
 
 In this example, we have a series of DIDs for each participating party. For the sake of brevity, this document will often use the last 4 characters of the DID to refer to the DID itself.
 
-Authentication Issuer DID = `did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG` (`ReDG` for short)
-Requester DID = `did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM` (`SBSM` for short)
-Responder DID = `did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP` (`FpRP` for short)
+- Authorisation Issuer DID = `did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG` (`ReDG` for short)
+- Requester DID = `did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM` (`SBSM` for short)
+- Responder DID = `did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP` (`FpRP` for short)
 
-We also need a DID with a BlsBbs key - in this case it is a Hedera DID:
+We also need a DID with a BlsBbs key - in this case it is a Hedera DID;
 
-Issuer DID: `did:hedera:testnet:z6MknSnvSESWvijDEysG1wHGnaiZSLSkQEXMECWvXWnd1uaJ_0.0.1723780` (`1uaJ` for short)
+- Data Issuer DID: `did:hedera:testnet:z6MknSnvSESWvijDEysG1wHGnaiZSLSkQEXMECWvXWnd1uaJ_0.0.1723780` (`1uaJ` for short)
 
-For the sake of this example, the issuer will also be the subject of the credential.
+For the sake of this example, the issuer will also be the subject of the data credential.
 
-We also need a UUID for our guardian - we will use `bd07af81-ea0e-4ef2-9846-d410a3cfcdf0` for this example.
+We also need a UUID for our Guardian - we will use `bd07af81-ea0e-4ef2-9846-d410a3cfcdf0` for this example.
 
-Finally, we need at least one topic to use (or two if we want to use different topics for our credential submissions and request/response flows).
-You can do this with the `hedera-did-register` repository or write your own short script using the Hedera SDK.
+Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows.
 
-See Appendix A for full details of each DID.
+You can create topics with the `hedera-did-register` repository or write your own short script using the Hedera SDK.
+
+See [Appendix A](#appendix-a) for full details of each DID.
 
 ## Setting Up Repositories
 
-First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the README.
+1. First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the README.
 
-We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-responder). Exact install details can be found in the README. This document will cover configuration.
+2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-responder). Exact install details can be found in the README. This document will cover configuration.
 
-We also need to clone, setup and start the [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock). Install and setup details can be found in the README.
+3. Additonally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
+
+# Setup Data
 
 ## Issuing Required Credentials
 
-First, we need to issue our example credentials: a credential that will be used for selective disclosure and an authorization credential for the requestor.
+First, we need to issue our example credentials: 
+- a data credential that will be used for selective disclosure, and 
+- a credential for the authorization of the verfifier.
 
-The `guardian-sd-credential-issue-example` repository can do this.
 
-Run `yarn issueAndEncrypt` and follow the prompts to issue our credential to `1uaJ` (as `1uaJ`):
+### Issuing Data Credential
+
+The `guardian-sd-credential-issue-example` repository can create a example data credential that will be used for selective disclosure.
+
+
+Run 
+```shell
+yarn issueAndEncrypt
+``` 
+and follow the prompts to issue our credential to `1uaJ` (as `1uaJ`):
 
 ```
 ? Enter Subject DID did:hedera:testnet:z6MknSnvSESWvijDEysG1wHGnaiZSLSkQEXMECWvXWnd1uaJ_0.0.1723780
@@ -88,6 +103,8 @@ as well as the `id` of the credential output
 // ...
 ```
 
+### Issuing Authoriszation Credential
+
 We can also use the same repository to issue our authorization credential to the requestor:
 
 Run `yarn issueAuth` and follow the prompts to issue as `ReDG` to the requestor `SBSM`:
@@ -108,7 +125,7 @@ Appendix B has the credentials used in this example.
 
 We should now have everything we need to configure our responder. In the root of the responder, copy the `config.example.json` to create our `config.json` and fill in the details:
 
-Note, base58 to hex conversion can be done [here](https://appdevtools.com/base58-encoder-decoder).
+Note, base58 to hex conversion can be done [online here](https://appdevtools.com/base58-encoder-decoder).
 
 ```jsonc
 {
@@ -152,9 +169,9 @@ Note, base58 to hex conversion can be done [here](https://appdevtools.com/base58
 }
 ```
 
-Once configured, we can start the responder.
+Once configured, we can start the responder; `yarn start`.
 
-## Register a Credential
+## Register a Data Credential
 
 We need to register the encrypted credential that we made with the guardian.
 To do this, we can run the responder script `yarn register` in a new terminal and fill in details as prompted from the steps we completed above:
@@ -249,16 +266,16 @@ Example DID Documents
 
 All `did:key` examples were generated using the `did-method-key` library in the following simple script:
 
-```
+```javascript
 const didKeyDriver = require('did-method-key').driver();
 const didDocument = await didKeyDriver.generate();
 console.log(JSON.stringify(didDocument, null, 2));
 console.log(didDocument.keys);
 ```
 
-## Authentication Issuer DID
+## Authorization Issuer DID
 
-`did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG`
+[`did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG`](https://dev.uniresolver.io/1.0/identifiers/did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG)
 
 ```json
 {
@@ -496,15 +513,11 @@ DID Document
 
 # Appendix B
 
-## Issued Credential
+Sample Data documents.
 
-```
-Passphrase: 0a4af9ed7b9f0cc8a14b270cecf57045734b648a3aee5acb18227cb113c44ba6f1fbc8692d34b8e2993e5bf2f2049afc
-Encrypted Passphrase: Aes256Gcm.TX7OKlFpgW2Pvb6FaisLtHmDPBLEMt7EEpx9qWzj5EXd9W8f7sQV55_4m_Yw9gV1wbi-9P_rvSJzb7CAqvKthr2VR2f_tf5tT7YID3QkfWdoEXKY1hD25a3TZ8soO8yl.QUAAAAAFaXYADAAAAADebqcpqIH2XqWfxrAFYXQAEAAAAAD8TUEtifxmd4yaP161V7vyAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAABufNROtKnYY8PqCxjThVHOjrtfVxBpADpVAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA
-Passphrase Encryption Key: 02f7d51294a8e2e5edccfaa6ce1cc8ff96e04fbba04382615e0a857511eaa5ab3cddc18c8f49e48851e7293882afecf8
-Encrypted credential IPFS CID: bafybeiaxu5au6fg63aifihinbigkqp5r66u7tqfomlgsz44sher4ubjlki/credential.json
-Disclosed credential IPFS CID: bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json
-```
+
+## Issued Verfiable Data
+
 
 ```json
 {
@@ -554,9 +567,16 @@ Disclosed credential IPFS CID: bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpc
 }
 ```
 
+### Encrypted Data (EVC) Published
+
+- Encrypted credential IPFS CID: [`bafybeiaxu5au6fg63aifihinbigkqp5r66u7tqfomlgsz44sher4ubjlki/credential.json`](https://ipfs.io/ipfs/bafybeiaxu5au6fg63aifihinbigkqp5r66u7tqfomlgsz44sher4ubjlki/credential.json)
+  - Passphrase: `0a4af9ed7b9f0cc8a14b270cecf57045734b648a3aee5acb18227cb113c44ba6f1fbc8692d34b8e2993e5bf2f2049afc`
+  - Encrypted Passphrase: `Aes256Gcm.TX7OKlFpgW2Pvb6FaisLtHmDPBLEMt7EEpx9qWzj5EXd9W8f7sQV55_4m_Yw9gV1wbi-9P_rvSJzb7CAqvKthr2VR2f_tf5tT7YID3QkfWdoEXKY1hD25a3TZ8soO8yl.QUAAAAAFaXYADAAAAADebqcpqIH2XqWfxrAFYXQAEAAAAAD8TUEtifxmd4yaP161V7vyAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAABufNROtKnYY8PqCxjThVHOjrtfVxBpADpVAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA`
+  - Passphrase Encryption Key: `02f7d51294a8e2e5edccfaa6ce1cc8ff96e04fbba04382615e0a857511eaa5ab3cddc18c8f49e48851e7293882afecf8`
+
 ### Public Disclosed Data
 
-`bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`
+- Disclosed data verifiable credential IPFS CID: [`bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`](https://ipfs.io/ipfs/bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json)
 
 ```json
 {
@@ -616,6 +636,8 @@ Disclosed credential IPFS CID: bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpc
 ```
 
 # Appendix C
+
+Example Slective Disclosure flow documents.
 
 ## Presentation Request
 
