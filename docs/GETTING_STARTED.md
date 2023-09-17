@@ -1,21 +1,26 @@
-# Getting Started Guide 
+# Getting Started Guide
 
-- [Setup](#setup)
+- [Getting Started Guide](#getting-started-guide)
+- [Overview and Environment](#overview-and-environment)
   - [Participating Parties](#participating-parties)
   - [Setting Up Repositories](#setting-up-repositories)
+- [Setup Data](#setup-data)
   - [Issuing Required Credentials](#issuing-required-credentials)
+    - [Issuing Data Credential](#issuing-data-credential)
+    - [Issuing Authoriszation Credential](#issuing-authoriszation-credential)
   - [Configuring the Responder](#configuring-the-responder)
-  - [Register a Credential](#register-a-credential)
+  - [Register a Data Credential](#register-a-data-credential)
   - [Configuring the Verifier](#configuring-the-verifier)
 - [Request Disclosure](#request-disclosure)
   - [Connect Hedera Account](#connect-hedera-account)
 - [Appendix A](#appendix-a)
-  - [Authentication Issuer DID](#authentication-issuer-did)
+  - [Authorization Issuer DID](#authorization-issuer-did)
   - [Requester DID](#requester-did)
   - [Responder DID](#responder-did)
   - [Issuer DID](#issuer-did)
 - [Appendix B](#appendix-b)
-  - [Issued Credential](#issued-credential)
+  - [Issued Verfiable Data](#issued-verfiable-data)
+    - [Encrypted Data (EVC) Published](#encrypted-data-evc-published)
     - [Public Disclosed Data](#public-disclosed-data)
   - [Authorization Credential](#authorization-credential)
 - [Appendix C](#appendix-c)
@@ -62,20 +67,21 @@ See [Appendix A](#appendix-a) for full details of each DID.
 
 ## Issuing Required Credentials
 
-First, we need to issue our example credentials: 
-- a data credential that will be used for selective disclosure, and 
-- a credential for the authorization of the verfifier.
+First, we need to issue our example credentials:
 
+- a data credential that will be used for selective disclosure, and
+- a credential for the authorization of the verfifier.
 
 ### Issuing Data Credential
 
 The `guardian-sd-credential-issue-example` repository can create a example data credential that will be used for selective disclosure.
 
+Run
 
-Run 
 ```shell
 yarn issueAndEncrypt
-``` 
+```
+
 and follow the prompts to issue our credential to `1uaJ` (as `1uaJ`):
 
 ```
@@ -515,9 +521,7 @@ DID Document
 
 Sample Data documents.
 
-
 ## Issued Verfiable Data
-
 
 ```json
 {
