@@ -7,7 +7,7 @@
 - [Setup Data](#setup-data)
   - [Issuing Required Credentials](#issuing-required-credentials)
     - [Issuing Data Credential](#issuing-data-credential)
-    - [Issuing Authoriszation Credential](#issuing-authoriszation-credential)
+    - [Issuing Authorization Credential](#issuing-authorization-credential)
   - [Configuring the Responder](#configuring-the-responder)
   - [Register a Data Credential](#register-a-data-credential)
   - [Configuring the Verifier](#configuring-the-verifier)
@@ -61,7 +61,7 @@ See [Appendix A](#appendix-a) for full details of each DID.
 
 2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-responder). Exact install details can be found in the README. This document will cover configuration.
 
-3. Additonally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
+3. Additionally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convenience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
 
 # Setup Data
 
@@ -70,7 +70,7 @@ See [Appendix A](#appendix-a) for full details of each DID.
 First, we need to issue our example credentials:
 
 - a data credential that will be used for selective disclosure, and
-- a credential for the authorization of the verfifier.
+- a credential for the authorization of the verifier.
 
 ### Issuing Data Credential
 
@@ -109,7 +109,7 @@ as well as the `id` of the credential output
 // ...
 ```
 
-### Issuing Authoriszation Credential
+### Issuing Authorization Credential
 
 We can also use the same repository to issue our authorization credential to the requestor:
 
@@ -641,7 +641,7 @@ Sample Data documents.
 
 # Appendix C
 
-Example Slective Disclosure flow documents.
+Example Selective Disclosure flow documents.
 
 ## Presentation Request
 
