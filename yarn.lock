@@ -4269,7 +4269,7 @@ crypto-js@^4.1.1:
   resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
   integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
 
-crypto-ld@^3.7.0:
+crypto-ld@^3.6.0, crypto-ld@^3.7.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/crypto-ld/-/crypto-ld-3.9.0.tgz#4f42849a143b5d65f28b018d80bc0fee6cd37ba8"
   integrity sha512-PFE7V6A2QNnUp6iiPVEZI4p8wsztkEWLbY1BAXVnclm/aw4KGwpJ+1Ds4vQUCJ5BsWxj15fwE5rHQ8AWaWB2nw==
@@ -4442,6 +4442,16 @@ detect-newline@^3.0.0:
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
 
+did-method-key@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/did-method-key/-/did-method-key-0.7.0.tgz#6f0faf6993a693d38f0034a2023bb4854ba59e7c"
+  integrity sha512-Pekl0ikvTVd39s02p/lO9rGdFZj76v9VPD5gWeip+7goGVTHLoDuGSDenWcWP5oqgTtfmdAvytLBAPUuCqQb0A==
+  dependencies:
+    crypto-ld "^3.7.0"
+    lru-cache "^6.0.0"
+    security-context "^4.0.0"
+    x25519-key-pair "^3.0.0"
+
 diff-sequences@^29.4.3:
   version "29.4.3"
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-29.4.3.tgz#9314bc1fabe09267ffeca9cbafc457d8499a13f2"
@@ -4507,6 +4517,13 @@ ed25519-signature-2020-context@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ed25519-signature-2020-context/-/ed25519-signature-2020-context-1.1.0.tgz#b2f724f07db154ddf0fd6605410d88736e56fd07"
   integrity sha512-dBGSmoUIK6h2vadDctrDnhhTO01PR2hJk0mRNEfrRDPCjaIwrfy4J+eziEQ9Q1m8By4f/CSRgKM1h53ydKfdNg==
+
+ed2curve@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/ed2curve/-/ed2curve-0.2.1.tgz#22e6aaa3569e3c4dbf4eefa29612ec329e58190c"
+  integrity sha512-lChFRsYZqp2tZvPnej3w6tH/oW2vCQ/C8pdsLvQHekhOkq3zHiayEfCxz/Opabsa+ZIPGujD7BlDuzmD+1EnmA==
+  dependencies:
+    tweetnacl "0.x.x"
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -9659,12 +9676,12 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tweetnacl@^0.14.3, tweetnacl@~0.14.0:
+tweetnacl@0.x.x, tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-0.14.5.tgz#5ae68177f192d4456269d108afa93ff8743f4f64"
   integrity sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==
 
-tweetnacl@^1.0.3:
+tweetnacl@^1.0.1, tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
@@ -10120,6 +10137,17 @@ ws@^8.12.1, ws@^8.4.0:
   version "8.13.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
   integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
+
+x25519-key-pair@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/x25519-key-pair/-/x25519-key-pair-3.1.0.tgz#5922319676f4beda006a0df3bf6ac54c86157f4b"
+  integrity sha512-i+kbYsZfmbtqy7PmG936h1rtYLm5vMTObOcQ3jVjFdgmdCxCyqRHHRTGg23014QGZ/b5vXfh4+zx3xdAbTOzXQ==
+  dependencies:
+    crypto-ld "^3.6.0"
+    ed2curve "^0.2.1"
+    esm "^3.2.22"
+    node-forge "^0.10.0"
+    tweetnacl "^1.0.1"
 
 xml2js@^0.5.0:
   version "0.5.0"

@@ -1,7 +1,7 @@
 import { Ed25519Signature2020 } from '@digitalbazaar/ed25519-signature-2020';
-import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020';
 import { signPresentation } from '@digitalbazaar/vc';
 import { Logger } from 'winston';
+import { buildEd25519VerificationKey2020 } from '../util/key-data.js';
 import { DocumentLoader } from './types.js';
 
 export class PresentationSigner {
@@ -16,12 +16,7 @@ export class PresentationSigner {
   async signPresentation(presentation: any, challenge: string) {
     this.logger?.debug('Signing presentation');
     this.logger?.silly(JSON.stringify(presentation));
-    const key =
-      this.keyConfiguration.type === 'Ed25519VerificationKey2018'
-        ? await Ed25519VerificationKey2020.fromEd25519VerificationKey2018({
-            keyPair: this.keyConfiguration,
-          })
-        : await Ed25519VerificationKey2020.from(this.keyConfiguration);
+    const key = await buildEd25519VerificationKey2020(this.keyConfiguration);
 
     const suite = new Ed25519Signature2020({ key });
 

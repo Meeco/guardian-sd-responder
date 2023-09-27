@@ -1,12 +1,10 @@
 import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519Signature2020 } from '@digitalbazaar/ed25519-signature-2020';
 
-import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
-import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020';
-
 import * as vc from '@digitalbazaar/vc';
 import { Logger } from 'winston';
 import { GuardianConfig } from '../util/config.js';
+import { buildEd25519VerificationKey } from '../util/key-data.js';
 import { PresentationVerifier } from './presentation-verifier.js';
 import {
   DocumentLoader,
@@ -123,26 +121,17 @@ export class PresentationVerifierDigitalBazaar extends PresentationVerifier {
       this.logger?.verbose(didDoc);
       return false;
     }
+    const keyId = didKeyId.split('#').pop();
+    const keyList = didDoc.publicKey ?? didDoc.verificationMethod ?? [];
+    const key = keyId
+      ? keyList.find((item: any) => item.id === didKeyId || item.id === keyId)
+      : keyList[0];
 
-    /**
-     * Universal resolver can return `Ed25519VerificationKey2018` type with only
-     * a `publicKeyJwk` which the DigitalBazaar 2018 key constructor doesn't handle.
-     */
-    if (
-      verificationKey?.type == 'Ed25519VerificationKey2018' &&
-      verificationKey.publicKeyJwk
-    ) {
-      verificationKey.type = 'JsonWebKey2020';
+    if (!key) {
+      throw new Error(`No valid key found on did document`);
     }
 
-    // This could technically just be `Ed25519VerificationKey2020.from` since
-    // that supports going directly from `Ed25519VerificationKey2018`
-    const key =
-      verificationKey?.type == 'Ed25519VerificationKey2018'
-        ? await Ed25519VerificationKey2018.from(didDoc.verificationMethod[0])
-        : await Ed25519VerificationKey2020.from(didDoc.verificationMethod[0]);
-
-    return key;
+    return buildEd25519VerificationKey(didDoc.verificationMethod[0]);
   }
 
   private getSuite(item: VerifiablePresentation | VerifiableCredential) {

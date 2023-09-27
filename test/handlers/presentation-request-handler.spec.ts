@@ -70,7 +70,7 @@ describe('PresentationRequestHandler', () => {
     encryption.encrypt.mockImplementation(
       (data) => `encrypted:${JSON.stringify(data)}`
     );
-    (encryption as any)['publicKey'] = Buffer.from('example-public', 'utf-8');
+    (encryption as any)['publicKeyId'] = 'example-public';
   });
 
   function mockDecryptedFileResponse(response: any) {
@@ -366,9 +366,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
     expect(logger.error).toHaveBeenCalledWith(
-      new Error(
-        'Writing file to HFS did not return a file id - can not respond'
-      )
+      'Writing file to HFS did not return a file id - can not respond'
     );
 
     expect(messenger.send).toHaveBeenCalledWith({
@@ -425,7 +423,7 @@ describe('PresentationRequestHandler', () => {
     expect(logger.error).toHaveBeenCalledWith(
       `There was an unexpected problem processing the request`
     );
-    expect(logger.error).toHaveBeenCalledWith(new Error('Test error'));
+    expect(logger.error).toHaveBeenCalledWith('Test error');
 
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
@@ -500,6 +498,7 @@ describe('PresentationRequestHandler', () => {
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
         response_file_id: '0.0.5432',
+        response_file_encrypted_key_id: 'example-public',
       }),
       topicId: '0.0.1234',
     });

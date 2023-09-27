@@ -85,7 +85,7 @@ export const responderKey = (
 
   return edsa_key_config.type == 'Ed25519VerificationKey2018'
     ? ({
-        id: edsa_key_config.key_id,
+        id: edsa_key_config.id,
         controller: did,
         type: 'Ed25519VerificationKey2018',
         privateKeyBase58: bs58.encode(
@@ -96,7 +96,7 @@ export const responderKey = (
         ),
       } as Ed25519VerificationKey2018Key)
     : ({
-        id: edsa_key_config.key_id,
+        id: edsa_key_config.id,
         controller: did,
         type: edsa_key_config.type,
         privateKeyMultibase: base58btc.encode(
@@ -182,7 +182,7 @@ export const createServices = (configuration: EnvironmentConfig) => {
   switch (edsa_key_config.type) {
     case 'Ed25519VerificationKey2018':
       edsaKeyConfig = {
-        id: edsa_key_config.key_id,
+        id: edsa_key_config.id,
         controller: did,
         privateKeyBase58: bs58.encode(
           Buffer.from(edsa_key_config.private_key_hex, 'hex')
@@ -195,7 +195,7 @@ export const createServices = (configuration: EnvironmentConfig) => {
       break;
     case 'Ed25519VerificationKey2020':
       edsaKeyConfig = {
-        id: edsa_key_config.key_id,
+        id: edsa_key_config.id,
         controller: did,
         privateKeyMultibase: base58btc.encode(
           Buffer.from(edsa_key_config.private_key_hex, 'hex')

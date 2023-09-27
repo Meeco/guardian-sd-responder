@@ -25,6 +25,7 @@ export interface QueryResponseMessage {
   request_id: string;
   responder_did: string;
   offer_hbar: number;
+  response_file_encrypted_key_id: string;
 }
 
 /**
@@ -43,6 +44,7 @@ type SuccessResponse = {
   request_id: string;
   recipient_did: string;
   response_file_id: string;
+  response_file_encrypted_key_id: string;
 };
 
 type ErrorResponse = {

@@ -28,7 +28,7 @@ export class CredentialRegistry {
    * (encrypted with `this.passphraseEncryptionKey`)
    */
   async registerCredential(details: RegisterCredentialMessage) {
-    this.logger?.verbose(`Register credential "${details.vc_id}"`);
+    this.logger?.info(`Attempting to register credential "${details.vc_id}"`);
 
     // Ensure we can actually decrypt the passphrase before saving
     try {
@@ -38,8 +38,11 @@ export class CredentialRegistry {
       this.logger?.error(error);
       throw new Error(error);
     }
-
-    return this.store.write(`${this.knownPrefix}:${details.vc_id}`, details);
+    this.logger?.verbose(
+      `Credential "${details.vc_id}" decrypted ok - storing`
+    );
+    await this.store.write(`${this.knownPrefix}:${details.vc_id}`, details);
+    this.logger?.info(`Registered new credential "${details.vc_id}"`);
   }
 
   private async decryptPassphrase(details: RegisterCredentialMessage) {
