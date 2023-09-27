@@ -2,6 +2,8 @@
 
 Guardian Selective Disclosure - Presentation Exchange Responder Service
 
+See the [Getting Started](./docs/GETTING_STARTED.md) document for a full setup guide.
+
 ## Configuration
 
 See `config.example.json` for an example configuration file.
