@@ -7,7 +7,7 @@ import { Web3Storage } from 'web3.storage';
 export class IpfsWriter {
   constructor(private readonly web3StorageToken: string) {}
 
-  public async writeFile(contents: any) {
+  public async writeFile(contents: string) {
     const client = new Web3Storage({ token: this.web3StorageToken });
     const name = 'did-document.json';
     const rootCid = await client.put([
@@ -15,7 +15,7 @@ export class IpfsWriter {
         name,
         stream() {
           return Readable.from(
-            Buffer.from(JSON.stringify(contents), 'utf-8')
+            Buffer.from(contents, 'utf-8')
           ) as any as ReadableStream;
         },
       },
