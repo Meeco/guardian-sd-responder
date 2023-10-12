@@ -16,7 +16,6 @@ See `config.example.json` for an example configuration file.
 | `hedera_network`                    | One of `testnet` `previewnet` or `maintenet`                                                     |
 | `edsa_key_config`                   | DID key configuration for the Ed255192018 or Ed255192020 key for the responder did               |
 | `payer_account_id`                  | Hedera account id to use to pay for HCS/HFS transactions                                         |
-| `payer_account_public_key`          | Hedera account public key to use to pay for HCS/HFS transactions                                 |
 | `payer_account_private_key`         | Hedera account private key to use to pay for HCS/HFS transactions                                |
 | `hedera_encryption_private_key_hex` | Hex-encoded ED25519 private key to use for encryption                                            |
 | `topic_ids`                         | Array of hcs topics to listen for requests on                                                    |

@@ -36,7 +36,6 @@ export interface ResponderConfig {
   edsa_key_config: KeyConfig;
   payer_account_id: string;
   payer_account_private_key: string;
-  payer_account_public_key: string;
   hedera_encryption_private_key_hex: string;
   topic_ids: string[];
   log_level: string;
