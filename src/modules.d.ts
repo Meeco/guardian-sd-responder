@@ -10,3 +10,4 @@ declare module '@digitalbazaar/x25519-key-agreement-key-2020';
 declare module '@digitalbazaar/minimal-cipher';
 
 declare module 'did-method-key';
+declare module 'web3.storage';

@@ -31,11 +31,11 @@ export type HederaNetwork = 'testnet' | 'previewnet' | 'mainnet';
 
 export interface ResponderConfig {
   did: string;
+  web3_storage_api_token: string;
   hedera_network: HederaNetwork;
   edsa_key_config: KeyConfig;
   payer_account_id: string;
   payer_account_private_key: string;
-  payer_account_public_key: string;
   hedera_encryption_private_key_hex: string;
   topic_ids: string[];
   log_level: string;

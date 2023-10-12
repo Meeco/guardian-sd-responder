@@ -43,7 +43,7 @@ type SuccessResponse = {
   operation: MessageType.PRESENTATION_RESPONSE;
   request_id: string;
   recipient_did: string;
-  response_file_id: string;
+  response_file_cid: string;
   response_file_encrypted_key_id: string;
 };
 

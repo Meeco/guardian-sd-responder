@@ -10,7 +10,7 @@ import {
   PresentationRequestMessage,
 } from '../../src/hcs/messages.js';
 import { HfsReader } from '../../src/hfs/hfs-reader.js';
-import { HfsWriter } from '../../src/hfs/hfs-writer.js';
+import { IpfsWriter } from '../../src/ipfs/ipfs-writer.js';
 import { BbsBlsService } from '../../src/vc/bbs-bls-service.js';
 import { CredentialRegistry } from '../../src/vc/credential-registry.js';
 import { PresentationVerifier } from '../../src/vc/presentation-verifier.js';
@@ -27,7 +27,7 @@ import {
 describe('PresentationRequestHandler', () => {
   let handler: PresentationRequestHandler;
   let reader: SpyObject<HfsReader>;
-  let writer: SpyObject<HfsWriter>;
+  let writer: SpyObject<IpfsWriter>;
   let messenger: SpyObject<HcsMessenger>;
   let registry: SpyObject<CredentialRegistry>;
   let bbsBls: SpyObject<BbsBlsService>;
@@ -366,7 +366,7 @@ describe('PresentationRequestHandler', () => {
 
     await handler.handle(message);
     expect(logger.error).toHaveBeenCalledWith(
-      'Writing file to HFS did not return a file id - can not respond'
+      'Writing file to IPFS did not return a file cid - can not respond'
     );
 
     expect(messenger.send).toHaveBeenCalledWith({
@@ -465,11 +465,7 @@ describe('PresentationRequestHandler', () => {
       credential,
     });
     messenger.send.mockResolvedValue(null);
-    writer.writeFile.mockResolvedValue({
-      toString() {
-        return '0.0.5432';
-      },
-    });
+    writer.writeFile.mockResolvedValue('abc123');
     bbsBls.createProof.mockResolvedValue(selectiveCredential);
     bbsBls.preparePresentation.mockResolvedValue(presentation);
 
@@ -497,7 +493,7 @@ describe('PresentationRequestHandler', () => {
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
         recipient_did: authorizationDetails.did,
-        response_file_id: '0.0.5432',
+        response_file_cid: 'abc123',
         response_file_encrypted_key_id: 'example-public',
       }),
       topicId: '0.0.1234',

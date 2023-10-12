@@ -9,7 +9,7 @@ import {
   PresentationResponseMessage,
 } from '../hcs/messages.js';
 import { HfsReader } from '../hfs/hfs-reader.js';
-import { HfsWriter } from '../hfs/hfs-writer.js';
+import { IpfsWriter } from '../ipfs/ipfs-writer.js';
 import { BbsBlsService, VerifiableCredential } from '../vc/bbs-bls-service.js';
 import { CredentialRegistry } from '../vc/credential-registry.js';
 import { PresentationRequest } from '../vc/presentation-request.js';
@@ -32,7 +32,7 @@ export class PresentationRequestHandler
   constructor(
     private readonly responderDid: string,
     private readonly reader: HfsReader,
-    private readonly writer: HfsWriter,
+    private readonly writer: IpfsWriter,
     private readonly hcsMessenger: HcsMessenger,
     private readonly registry: CredentialRegistry,
     private readonly bbsBlsService: BbsBlsService,
@@ -208,14 +208,14 @@ export class PresentationRequestHandler
         authorization_details.did
       );
 
-      this.logger?.verbose('Write encrypted presentation to HFS');
-      const fileId = await this.writer.writeFile(
+      this.logger?.verbose('Write encrypted presentation to IPFS');
+      const fileCid = await this.writer.writeFile(
         JSON.stringify(encryptedResponse)
       );
 
-      if (!fileId) {
+      if (!fileCid) {
         throw new Error(
-          'Writing file to HFS did not return a file id - can not respond'
+          'Writing file to IPFS did not return a file cid - can not respond'
         );
       }
 
@@ -223,7 +223,7 @@ export class PresentationRequestHandler
         operation: MessageType.PRESENTATION_RESPONSE,
         request_id,
         recipient_did: authorization_details.did,
-        response_file_id: fileId.toString(),
+        response_file_cid: fileCid,
         response_file_encrypted_key_id: this.encryption.publicKeyId,
       };
 
