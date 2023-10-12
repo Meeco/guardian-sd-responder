@@ -31,6 +31,7 @@ export type HederaNetwork = 'testnet' | 'previewnet' | 'mainnet';
 
 export interface ResponderConfig {
   did: string;
+  web3_storage_api_token: string;
   hedera_network: HederaNetwork;
   edsa_key_config: KeyConfig;
   payer_account_id: string;

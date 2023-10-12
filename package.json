@@ -54,6 +54,7 @@
     "multiformats": "^12.0.1",
     "tweetnacl": "^1.0.3",
     "uuid": "^9.0.0",
+    "web3.storage": "^4.5.5",
     "winston": "^3.9.0"
   },
   "devDependencies": {

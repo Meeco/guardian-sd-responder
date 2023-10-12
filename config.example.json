@@ -1,6 +1,7 @@
 {
   "responder": {
     "did": "did:key:1234",
+    "web3_storage_api_token": "abc123",
     "hedera_network": "testnet",
     "edsa_key_config": {
       "id": "123456#did-root-key",

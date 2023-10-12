@@ -1,4 +1,4 @@
-import { Client, Hbar, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { Client, Hbar } from '@hashgraph/sdk';
 import bs58 from 'bs58';
 import { existsSync, readFileSync } from 'fs';
 import { base58btc } from 'multiformats/bases/base58';
@@ -6,7 +6,6 @@ import { join } from 'path';
 import { HcsEncryption } from '../hcs/hcs-encryption.js';
 import { HcsMessenger } from '../hcs/hcs-messenger.js';
 import { HfsReader } from '../hfs/hfs-reader.js';
-import { HfsWriter } from '../hfs/hfs-writer.js';
 import { MattrBbsBlsService } from '../vc/bbs-bls-service-mattr.js';
 import { CredentialRegistry } from '../vc/credential-registry.js';
 import { resolveDidDocument } from '../vc/did-resolve.js';
@@ -24,6 +23,7 @@ import { log } from './logger.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { IpfsWriter } from '../ipfs/ipfs-writer.js';
 
 // As we are using ESM we can't use vanilla __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -115,8 +115,8 @@ export const createServices = (configuration: EnvironmentConfig) => {
     hedera_network,
     payer_account_id,
     payer_account_private_key,
-    payer_account_public_key,
     edsa_key_config,
+    web3_storage_api_token,
   } = responder;
   const client = _createHederaClient(
     payer_account_id,
@@ -140,15 +140,9 @@ export const createServices = (configuration: EnvironmentConfig) => {
     log
   );
 
-  const responderPublicKey = PublicKey.fromString(payer_account_public_key);
-  const responderPrivateKey = PrivateKey.fromString(payer_account_private_key);
+  const web3StorageToken = web3_storage_api_token;
 
-  const writer = new HfsWriter(
-    responderPublicKey,
-    responderPrivateKey,
-    client,
-    log
-  );
+  const writer = new IpfsWriter(web3StorageToken);
 
   const registry = new CredentialRegistry(
     storage,
