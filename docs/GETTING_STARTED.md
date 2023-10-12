@@ -137,6 +137,7 @@ Note, base58 to hex conversion can be done [online here](https://appdevtools.com
 {
   "responder": {
     "did": "did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP", // Our 'FpRP' responder DID
+    "web3_storage_api_token": "abc123",
     "hedera_network": "testnet",
     "edsa_key_config": {
       "id": "did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP#z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP",

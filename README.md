@@ -13,6 +13,7 @@ See `config.example.json` for an example configuration file.
 | Property                            | Description                                                                                      |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `did`                               | The did of the responder                                                                         |
+| `web3_storage_api_token`            | API token for `web3.storage` for writing file to IPFS                                            |
 | `hedera_network`                    | One of `testnet` `previewnet` or `maintenet`                                                     |
 | `edsa_key_config`                   | DID key configuration for the Ed255192018 or Ed255192020 key for the responder did               |
 | `payer_account_id`                  | Hedera account id to use to pay for HCS/HFS transactions                                         |
