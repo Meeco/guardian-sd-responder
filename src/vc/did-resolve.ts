@@ -10,5 +10,5 @@ const HEDERA_RESOLVER_HOST =
  */
 export const resolveDidDocument = (did: string) => {
   const [root] = did.split('#');
-  return fetchJson(`${HEDERA_RESOLVER_HOST}/${root}`);
+  return fetchJson({ url: `${HEDERA_RESOLVER_HOST}/${root}` });
 };
