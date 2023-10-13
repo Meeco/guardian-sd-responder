@@ -54,7 +54,7 @@ export const testLoader = async (documentUrl: string) => {
 
   try {
     if (acceptedUrls.includes(documentUrl)) {
-      const doc = await fetchJson(documentUrl);
+      const doc = await fetchJson({ url: documentUrl });
       loaderCache[documentUrl] = doc;
       return {
         contextUrl: null,
