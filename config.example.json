@@ -6,12 +6,12 @@
     "edsa_key_config": {
       "id": "123456#did-root-key",
       "type": "Ed25519VerificationKey2020",
-      "public_key_hex": "1234abcdef",
-      "private_key_hex": "1234abcdef"
+      "public_key_hex": "0x1234abcdef",
+      "private_key_hex": "0x1234abcdef"
     },
     "payer_account_id": "0.0.0",
     "payer_account_private_key": "0123456789",
-    "hedera_encryption_private_key_hex": "8851425a8dee",
+    "hedera_encryption_private_key_hex": "0x1234abcdef",
     "topic_ids": ["0.0.0.0"],
     "log_level": "info"
   },
