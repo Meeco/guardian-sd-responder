@@ -31,7 +31,7 @@
 
 In order to complete this example, we need a Hedera payer account. A Testnet account can be created by registering via the [Hedera Portal](https://portal.hedera.com/).
 
-This document assumes you have a WalletConnect app (such as [Blade Wallet](https://bladewallet.io/)) installed with your account imported. Setting this up is outside the scope of this document.
+This document assumes you have a [HashPack Wallet](https://www.hashpack.app/) installed, and with an account imported. Setting this up is outside the scope of this document.
 
 ## Participating Parties
 
@@ -51,15 +51,15 @@ We also need a UUID for our Guardian - we will use `bd07af81-ea0e-4ef2-9846-d410
 
 Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows.
 
-You can create topics with the `hedera-did-register` repository or write your own short script using the Hedera SDK.
+You can create topics with the [hedera-did-register-ipfs-example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository or [write your own short script using the Hedera SDK](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic).
 
 See [Appendix A](#appendix-a) for full details of each DID.
 
 ## Setting Up Repositories
 
-1. First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the README.
+1. First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the repository's README.
 
-2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-responder). Exact install details can be found in the README. This document will cover configuration.
+2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-verifier). Exact install details can be found in the repository's README. This document will cover configuration.
 
 3. Additionally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convenience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
 
@@ -74,7 +74,7 @@ First, we need to issue our example credentials:
 
 ### Issuing Data Credential
 
-The `guardian-sd-credential-issue-example` repository can create a example data credential that will be used for selective disclosure.
+The [guardian-sd-credential-issue-example](https://github.com/Meeco/guardian-sd-credential-issue-example) repository can create a example data credential that will be used for selective disclosure.
 
 Run
 
