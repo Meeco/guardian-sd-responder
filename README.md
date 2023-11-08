@@ -167,7 +167,7 @@ const encryptedPassphrase = await encryptWithKeyDerivedFromString({
   // Intended recipient
   "recipient_did": "did:hedera:testnet:z6MkmELdkLPDgwzwXSm166M2ut4i2M9GHALUiYvZBz15YzWG_0.0.1136547",
   // IPFS CID of the response JSON, encrypted with the DID in the request file authorization JSON
-  "response_file_cid": "0.0.1144004"
+  "response_file_cid": "bafybeiaxu5au6fg63aifihinbigkqp5r66u7tqfomlgsz44sher4ubjlki/vc.json.cryppo"
 }
 ```
 
