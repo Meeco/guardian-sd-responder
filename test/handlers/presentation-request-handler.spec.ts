@@ -486,9 +486,10 @@ describe('PresentationRequestHandler', () => {
       timestamp.toString() // consensus timestamp of the message is the challenge
     );
 
-    expect(writer.writeFile).toHaveBeenCalledWith(
-      JSON.stringify(`encrypted:${JSON.stringify(presentation)}`)
-    );
+    expect(writer.writeFile).toHaveBeenCalledWith({
+      contents: JSON.stringify(`encrypted:${JSON.stringify(presentation)}`),
+      fileName: 'presentation-response.json',
+    });
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({
         operation: MessageType.PRESENTATION_RESPONSE,
