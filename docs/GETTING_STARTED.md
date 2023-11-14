@@ -204,14 +204,12 @@ _Note_ - if you would rather skip HCS and just register the credential immediate
 We can now configure our verifier using our prepared details:
 
 ```
-# Hedera account details from the Hedera Portal
-REACT_APP_HEDERA_PRIVATE_KEY=YourHederaPrivateKey
-REACT_APP_HEDERA_PUBLIC_KEY=YourHederaPublicKey
+# Default Topics for sending/receiving message from HCS
+REACT_APP_TESTNET_DEFAULT_TOPIC_ID=0.0.1730327
+REACT_APP_MAINNET_DEFAULT_TOPIC_ID=0.0.3910585
 
-REACT_APP_TOPIC_ID=Y.Y.YYY # (your topic created earlier)
-
-# Hedera's mirror node REST API Url
-REACT_APP_MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com
+# Url of did universal resolver; defaults to https://dev.uniresolver.io
+REACT_APP_DID_UNIVERSAL_RESOLVER_URL=http://localhost:5000/1.0/identifiers
 ```
 
 We are now ready to start the verifier.
