@@ -211,7 +211,7 @@ export class PresentationRequestHandler
       this.logger?.verbose('Write encrypted presentation to IPFS');
       const fileCid = await this.writer.writeFile({
         contents: JSON.stringify(encryptedResponse),
-        fileName: 'presentation-response.json',
+        name: 'presentation-response.json',
       });
 
       if (!fileCid) {
