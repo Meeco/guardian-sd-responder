@@ -13,6 +13,10 @@
   - [Configuring the Verifier](#configuring-the-verifier)
 - [Request Disclosure](#request-disclosure)
   - [Connect Hedera Account](#connect-hedera-account)
+  - [Set Identity](#set-identity)
+  - [Query for Responders](#query-for-responders)
+  - [Disclosure Request](#disclosure-request)
+  - [Disclosure Response](#disclosure-response)
 - [Appendix A](#appendix-a)
   - [Authorization Issuer DID](#authorization-issuer-did)
   - [Requester DID](#requester-did)
@@ -31,7 +35,7 @@
 
 In order to complete this example, we need a Hedera payer account. A Testnet account can be created by registering via the [Hedera Portal](https://portal.hedera.com/).
 
-This document assumes you have a WalletConnect app (such as [Blade Wallet](https://bladewallet.io/)) installed with your account imported. Setting this up is outside the scope of this document.
+This document assumes you have a [HashPack Wallet](https://www.hashpack.app/) installed, and with an account imported. Setting this up is outside the scope of this document.
 
 ## Participating Parties
 
@@ -51,15 +55,15 @@ We also need a UUID for our Guardian - we will use `bd07af81-ea0e-4ef2-9846-d410
 
 Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows.
 
-You can create topics with the `hedera-did-register` repository or write your own short script using the Hedera SDK.
+You can create topics with the [hedera-did-register-ipfs-example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository or [write your own short script using the Hedera SDK](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic).
 
 See [Appendix A](#appendix-a) for full details of each DID.
 
 ## Setting Up Repositories
 
-1. First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the README.
+1. First, we need to clone the [Responder](https://github.com/Meeco/guardian-sd-responder) and set it up. Exact install and configuration details can be found in the repository's README.
 
-2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-responder). Exact install details can be found in the README. This document will cover configuration.
+2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-verifier). Exact install details can be found in the repository's README. This document will cover configuration.
 
 3. Additionally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convenience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
 
@@ -74,7 +78,7 @@ First, we need to issue our example credentials:
 
 ### Issuing Data Credential
 
-The `guardian-sd-credential-issue-example` repository can create a example data credential that will be used for selective disclosure.
+The [guardian-sd-credential-issue-example](https://github.com/Meeco/guardian-sd-credential-issue-example) repository can create a example data credential that will be used for selective disclosure.
 
 Run
 
@@ -142,7 +146,6 @@ Note, base58 to hex conversion can be done [online here](https://appdevtools.com
     "edsa_key_config": {
       "id": "did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP#z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP",
       "type": "Ed25519VerificationKey2018",
-      "controller": "did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP",
       "public_key_hex": "dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2", // 'FpRP' publicKeyBase58 as hex
       "private_key_hex": "25997732c614904e733ca43847b5944621c1d29ef57627ebe818307eab35c017dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2" // 'FpRP' privateKeyBase58 as hex
     },
@@ -202,17 +205,15 @@ _Note_ - if you would rather skip HCS and just register the credential immediate
 
 ## Configuring the Verifier
 
-We can now configure our verifier using our prepared details:
+We can now configure our verifier using our prepared details. The topic's can be updated in the UI, but setting a default value can be convinient
 
 ```
-# Hedera account details from the Hedera Portal
-REACT_APP_HEDERA_PRIVATE_KEY=YourHederaPrivateKey
-REACT_APP_HEDERA_PUBLIC_KEY=YourHederaPublicKey
+# Default Topics for sending/receiving message from HCS
+REACT_APP_TESTNET_DEFAULT_TOPIC_ID=0.0.1730327
+REACT_APP_MAINNET_DEFAULT_TOPIC_ID=0.0.3910585
 
-REACT_APP_TOPIC_ID=Y.Y.YYY # (your topic created earlier)
-
-# Hedera's mirror node REST API Url
-REACT_APP_MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com
+# Url of did universal resolver; defaults to https://dev.uniresolver.io
+REACT_APP_DID_UNIVERSAL_RESOLVER_URL=http://localhost:5000/1.0/identifiers
 ```
 
 We are now ready to start the verifier.
@@ -221,36 +222,54 @@ We are now ready to start the verifier.
 
 ## Connect Hedera Account
 
-In the verifier, we first need to connect our Hedera Account. In the verifier, hit the "Wallet Connect" button.
+In the verifier, we first need to connect a wallet app to the dApp to pay for Hedera transactions.
 
-![Wallet Connect](images/wallet-connect.png)
+![Hedera Account](images/verifier-connect-wallet-00.png)
 
-Scan the QR code with your wallet connect app and confirm the connection.
+The user may select the Hedera network to connect to, the UI supports `testnet` or `mainnet`.
+
+![Select Hedera Network](images/verifier-connect-wallet-01-select-network.png)
+
+Scan the QR code with your Hashpack wallet, and confirm the connection.
 Once complete, the verifier app will show as Connected to the hedera account.
 
-![Connected Hedera Account](images/connected-account.png)
+![Connecting Hedera Account](images/verifier-connect-wallet-02-connecting.png)
+![Connected Hedera Account](images/verifier-connect-wallet-03-connected.png)
+
+## Set Identity
 
 Select "Next" to proceed to the identity section and then select the saved authorization credential json file:
 
 ![Attach Authorization](images/attach-authorization.png)
 
 Select "Get Verification Method(s)" to get the verification methods for the DID of the authorization credential.
-Select the desired key and then enter the hex private key for the selected key (for the verifier - `SBSM` in our case).
-_Note_ the entered private key will need to be converted to hex - in our case from base58.
+
+Select the desired key and then enter the hex private key for the selected key (for the verifier - `SBSM` DID in our case).
+
+_Note_ the entered private key will need to be converted to hex (in our case from base58).
+
 The key should show as "Verified" if entered correctly:
 
 ![Verified Private Key](images/verified-private-key.png)
 
-Select "Next" to proceed to the VC Query section. Enter the IPFS CID of the public credential (our test example is `bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`) and select "Get VC". This show the ID of the VC:
+## Query for Responders
+
+Select "Next" to proceed to the VC Query section. Enter the IPFS CID of the public credential (in our test example, the CID is `bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`) and select "Get VC". 
+
+This will show the ID of the VC being queried:
 
 ![VC Query](images/vc-query.png)
 
-Select "Query Responders". This will prompt for signing confirmation on your Wallet Connect app.
+Select "Query Responders". This will prompt for signing confirmation in your Wallet app.
+
 Shortly after confirming, the responder should receive the query sent from the verifier and appear in the list of responders.
 
 ![Responder List](images/responder-list.png)
 
+## Disclosure Request
+
 Select "Next" to proceed to the Disclosure Request section, then select "Get VC Schema".
+
 This should show a list of fields available on the credential.
 Select some fields and then select "Create Presentation"
 
@@ -260,14 +279,19 @@ Once created, select the responder and select "Send Request"
 
 ![Send Request](images/send-request.png)
 
-This will ask for two signing confirmations on your Wallet Connect App.
-Shortly after confirming both requests, the responder should receive the request from the verifier and you will see the disclosed credential data with the selected fields.
+This will ask for two signing confirmations in your Wallet App.
+
+## Disclosure Response
+
+Shortly after confirming both requests, the verifier should receive the request from the responder, and you will see the disclosed credential data with the selected fields.
 
 ![Result](images/disclosure-result.png)
 
 The full request and response can be seen in Appendix C.
 
-# Appendix A
+# Appendices
+
+## Appendix A
 
 Example DID Documents
 
@@ -280,10 +304,11 @@ console.log(JSON.stringify(didDocument, null, 2));
 console.log(didDocument.keys);
 ```
 
-## Authorization Issuer DID
+### Authorization Issuer DID
 
 [`did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG`](https://dev.uniresolver.io/1.0/identifiers/did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG)
 
+#### DID Document
 ```json
 {
   "@context": ["https://w3id.org/did/v0.11"],
@@ -319,6 +344,7 @@ console.log(didDocument.keys);
 }
 ```
 
+#### Key Pairs
 ```js
 {
   'did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG#z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG': Ed25519KeyPair {
@@ -342,10 +368,11 @@ console.log(didDocument.keys);
 }
 ```
 
-## Requester DID
+### Verifier (Requester) DID
 
 `did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM`
 
+#### DID Document
 ```json
 {
   "@context": ["https://w3id.org/did/v0.11"],
@@ -380,7 +407,7 @@ console.log(didDocument.keys);
   ]
 }
 ```
-
+#### Key Pairs
 ```js
 {
   'did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM#z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM': Ed25519KeyPair {
@@ -404,10 +431,11 @@ console.log(didDocument.keys);
 }
 ```
 
-## Responder DID
+### Responder DID
 
 `did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP`
 
+#### DID Document
 ```json
 {
   "@context": ["https://w3id.org/did/v0.11"],
@@ -442,7 +470,7 @@ console.log(didDocument.keys);
   ]
 }
 ```
-
+#### Key(s)
 ```js
 {
   'did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP#z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP': Ed25519KeyPair {
@@ -466,7 +494,7 @@ console.log(didDocument.keys);
 }
 ```
 
-## Issuer DID
+### Issuer DID
 
 This was generated using the [Hedera DID IPFS Register Example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository.
 
@@ -491,8 +519,7 @@ DID Document file CID: bafybeifn6wwfs355md56nhwaklgr2uvuoknnjobh2d2suzsdv6zpoxaj
 Your DID: did:hedera:testnet:z6MknSnvSESWvijDEysG1wHGnaiZSLSkQEXMECWvXWnd1uaJ_0.0.1723780
 ```
 
-DID Document
-
+#### DID Document
 ```json
 {
   "@context": "https://www.w3.org/ns/did/v1",
@@ -517,10 +544,24 @@ DID Document
   "assertionMethod": ["#did-root-key", "#did-root-key-bbs"]
 }
 ```
+####  Keys
+
+- Ed25519 Verification secret key (hex): 
+  - `8026cf1cd700fd2d21740c26ad9cc34464ac80c203cac04492e6599458d5a49d248b76bed3b0ff28c3676462584f9642283f7f7b7ac9a2af1a83e2c0fe3a2b71c17b`
+- Ed25519 Verification public key (hex):  
+  - `ed0176bed3b0ff28c3676462584f9642283f7f7b7ac9a2af1a83e2c0fe3a2b71c17b`
+
+
+- Bls12381G2 Verification secret key (hex): 
+  - `155d6d9b748f7cb1b6c697ee903efe6dd0b8632f8f029da16ed43e4db2b12dce`
+- Bls12381G2 Verification public key (hex): 
+  - `83022719519feec03d53fa546c2bdd9a8d4fbef8e72cf583a377a05c8386b552d184f38c8dfd7bc198ce7c89116a9cdb0352929966a9c1c7a2fcb2eb037b76580583d1aa9ae895c4b495886d8c1f07d79bf0430a8e9fcb853d557d3e167b99b9`
+
+
 
 # Appendix B
 
-Sample Data documents.
+Sample Data documents
 
 ## Issued Verfiable Data
 
@@ -642,13 +683,12 @@ Sample Data documents.
 
 # Appendix C
 
-Example Selective Disclosure flow documents.
+Example Presentation Exchange documents
 
 ## Presentation Request
 
 ```json
 {
-  "comment": "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
   "presentation_definition": {
     "id": "54f38442-45c4-4372-84ad-41dc5ae14f1c",
     "input_descriptors": [
