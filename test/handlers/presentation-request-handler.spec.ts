@@ -488,7 +488,7 @@ describe('PresentationRequestHandler', () => {
 
     expect(writer.writeFile).toHaveBeenCalledWith({
       contents: JSON.stringify(`encrypted:${JSON.stringify(presentation)}`),
-      fileName: 'presentation-response.json',
+      name: 'presentation-response.json',
     });
     expect(messenger.send).toHaveBeenCalledWith({
       message: JSON.stringify({

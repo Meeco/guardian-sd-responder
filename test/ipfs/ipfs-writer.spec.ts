@@ -8,13 +8,13 @@ describe('IpfsWriter', () => {
 
   it('should return file cid', async () => {
     const rootCid = '456xyz';
-    const name = 'did-document.json';
+    const name = 'presentation-response.json';
 
     jest.spyOn(Web3Storage, 'put').mockResolvedValue(rootCid);
 
     const fileCid = await writer.writeFile({
       contents: web3StorageToken,
-      fileName: name,
+      name,
     });
     expect(fileCid).toBe(`${rootCid}/${name}`);
   });

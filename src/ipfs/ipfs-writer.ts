@@ -9,23 +9,23 @@ export class IpfsWriter {
 
   public async writeFile({
     contents,
-    fileName = 'file',
+    name,
   }: {
     contents: string;
-    fileName?: string;
+    name: string;
   }) {
     const client = new Web3Storage({ token: this.web3StorageToken });
     const rootCid = await client.put([
       {
-        fileName,
+        name,
         stream() {
           return Readable.from(
             Buffer.from(contents, 'utf-8')
           ) as any as ReadableStream;
         },
       },
-    ]);
-    const cid = `${rootCid}/${fileName}`;
+    ] satisfies { name: string; stream: () => ReadableStream }[]);
+    const cid = `${rootCid}/${name}`;
 
     return cid;
   }
