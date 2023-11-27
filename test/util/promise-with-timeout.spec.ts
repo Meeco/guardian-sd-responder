@@ -12,7 +12,7 @@ describe('promiseWithTimeout', () => {
 
   it('should reject error if timeout', async () => {
     const promise = jest.fn().mockImplementation(() => {
-      return new Promise((resolve) => setTimeout(resolve, 6000, true));
+      return new Promise((resolve) => setTimeout(resolve, 2000, true));
     }) as any;
 
     try {
