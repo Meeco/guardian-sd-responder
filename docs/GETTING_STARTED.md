@@ -19,7 +19,7 @@
   - [Disclosure Response](#disclosure-response)
 - [Appendix A](#appendix-a)
   - [Authorization Issuer DID](#authorization-issuer-did)
-  - [Requester DID](#requester-did)
+  - [Verifier DID](#verifier-did)
   - [Responder DID](#responder-did)
   - [Issuer DID](#issuer-did)
 - [Appendix B](#appendix-b)
@@ -51,11 +51,9 @@ We also need a DID with a BlsBbs key - in this case it is a Hedera DID;
 
 For the sake of this example, the issuer will also be the subject of the data credential.
 
-We also need a UUID for our Guardian - we will use `bd07af81-ea0e-4ef2-9846-d410a3cfcdf0` for this example.
+We also need a UUID for our Guardian - we will use an arbitrary value of `bd07af81-ea0e-4ef2-9846-d410a3cfcdf0` for this example.
 
-Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows.
-
-You can create topics with the [hedera-did-register-ipfs-example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository or [write your own short script using the Hedera SDK](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic).
+Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows. You can create topics with `yarn mktopic` from the [hedera-did-register-ipfs-example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository, or [write your own short script using the Hedera SDK](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic).
 
 See [Appendix A](#appendix-a) for full details of each DID.
 
@@ -65,7 +63,7 @@ See [Appendix A](#appendix-a) for full details of each DID.
 
 2. We also need to clone and setup the [Verifier](https://github.com/Meeco/guardian-sd-verifier). Exact install details can be found in the repository's README. This document will cover configuration.
 
-3. Additionally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convenience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README.
+3. Additionally need a DID resolver with support for `did:hedera` and `did:key` as used in these examples; for convenience, there is a [Hedera DID Universal Resolver Mock](https://github.com/Meeco/hedera-did-universal-resolver-mock) that can be used. Install and setup details can be found in the README. Alternatively, a [DID Universal Resolver](https://github.com/Meeco/universal-resolver) with [Hedera driver](https://github.com/Meeco/hedera-did-universal-resolver-driver) can be used.
 
 # Setup Data
 
@@ -96,7 +94,7 @@ and follow the prompts to issue our credential to `1uaJ` (as `1uaJ`):
 ? Enter Issuer Bls private key (hex) 155d6d9b748f7cb1b6c697ee903efe6dd0b8632f8f029da16ed43e4db2b12dce
 ```
 
-Note the passphrase details and disclosed IPFS CID we will need to pass to our responder:
+Note the passphrase details and [disclosed IPFS CID](https://ipfs.io/ipfs/bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json) we will need to pass to our responder:
 
 ```
 Encrypted Passphrase: Aes256Gcm.TX7OKlFpgW2Pvb6FaisLtHmDPBLEMt7EEpx9qWzj5EXd9W8f7sQV55_4m_Yw9gV1wbi-9P_rvSJzb7CAqvKthr2VR2f_tf5tT7YID3QkfWdoEXKY1hD25a3TZ8soO8yl.QUAAAAAFaXYADAAAAADebqcpqIH2XqWfxrAFYXQAEAAAAAD8TUEtifxmd4yaP161V7vyAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAABufNROtKnYY8PqCxjThVHOjrtfVxBpADpVAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA
@@ -109,13 +107,13 @@ as well as the `id` of the credential output
 
 ```
 // ...
-  "id": "urn:uuid:1e3f761f-0b11-4388-ba13-4750480ce65f",
+  "id": "urn:uuid:688daba5-fbd4-4643-8f9e-eb11289f5cfb",
 // ...
 ```
 
 ### Issuing Authorization Credential
 
-We can also use the same repository to issue our authorization credential to the requestor:
+We can also use the [guardian-sd-credential-issue-example](https://github.com/Meeco/guardian-sd-credential-issue-example) repository to issue our authorization credential to the verifier.
 
 Run `yarn issueAuth` and follow the prompts to issue as `ReDG` to the requestor `SBSM`:
 
@@ -127,15 +125,13 @@ Run `yarn issueAuth` and follow the prompts to issue as `ReDG` to the requestor 
 ? Enter Issuer Ed25519 private key (base58) fLtQysheMS1HPEKkwsaS91vtv7CbQwMQhSjjyMNuFqvvm4YNNTJ9ZdFHobvQwZM3bR6HqUXNir8aRK5gf9hYBJJ
 ```
 
-Save the issued credential to a json file for later use later.
-
-Appendix B has the credentials used in this example.
+Save the issued credential to a json file for later use by the verifier, or use the sample prepared [sample authz credential](sample_data/authz-credential.json) used in this example shown in [Appendix B](#appendix-b).
 
 ## Configuring the Responder
 
 We should now have everything we need to configure our responder. In the root of the responder, copy the `config.example.json` to create our `config.json` and fill in the details:
 
-Note, base58 to hex conversion can be done [online here](https://appdevtools.com/base58-encoder-decoder).
+_*Note: base58 to hex conversion can be done [online here](https://appdevtools.com/base58-encoder-decoder)._
 
 ```jsonc
 {
@@ -146,8 +142,8 @@ Note, base58 to hex conversion can be done [online here](https://appdevtools.com
     "edsa_key_config": {
       "id": "did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP#z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP",
       "type": "Ed25519VerificationKey2018",
-      "public_key_hex": "dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2", // 'FpRP' publicKeyBase58 as hex
-      "private_key_hex": "25997732c614904e733ca43847b5944621c1d29ef57627ebe818307eab35c017dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2" // 'FpRP' privateKeyBase58 as hex
+      "public_key_hex": "dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2", // 'FpRP' publicKey as hex
+      "private_key_hex": "25997732c614904e733ca43847b5944621c1d29ef57627ebe818307eab35c017dc0861d6915b3f2b1331b31e7e1f89b169c21584458d423af11f8fe6f56209f2" // 'FpRP' privateKey as hex
     },
     "payer_account_id": "X.X.XXX", // Use your payer account id
     "payer_account_public_key": "abcd1234", // Use your payer account public key - this is the DER encoded ED25519 private key from the Hedera portal
@@ -353,8 +349,8 @@ console.log(didDocument.keys);
     controller: 'did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG',
     owner: undefined,
     type: 'Ed25519VerificationKey2018',
-    privateKeyBase58: 'fLtQysheMS1HPEKkwsaS91vtv7CbQwMQhSjjyMNuFqvvm4YNNTJ9ZdFHobvQwZM3bR6HqUXNir8aRK5gf9hYBJJ',
-    publicKeyBase58: '8mDvd94ghWujmhexCCojmqhGtLs4LxMM7FfsFV2yWRRt'
+    publicKeyBase58: '8mDvd94ghWujmhexCCojmqhGtLs4LxMM7FfsFV2yWRRt',
+    privateKeyBase58: 'fLtQysheMS1HPEKkwsaS91vtv7CbQwMQhSjjyMNuFqvvm4YNNTJ9ZdFHobvQwZM3bR6HqUXNir8aRK5gf9hYBJJ'
   },
   'did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG#z6LSo1QgpLBKAUcsBRBZq59k9M68GHcqFAdxvx7HNwWWQoBq': X25519KeyPair {
     passphrase: null,
@@ -368,7 +364,7 @@ console.log(didDocument.keys);
 }
 ```
 
-### Verifier (Requester) DID
+### Verifier DID
 
 `did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM`
 
@@ -416,8 +412,9 @@ console.log(didDocument.keys);
     controller: 'did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM',
     owner: undefined,
     type: 'Ed25519VerificationKey2018',
+    publicKeyBase58: 'DaFxz5ch4PAMTmkzo7jagxGTNJTZJnUFW44fYWthWxey',
     privateKeyBase58: '4VfaBVTj7UruCQHpoizMAstHdbQwiu42Ws4RJYEEgHGfsZau3P44h8PMmeVEziiztUv46CPka87yP37mz4vqKy57',
-    publicKeyBase58: 'DaFxz5ch4PAMTmkzo7jagxGTNJTZJnUFW44fYWthWxey'
+    privateKeyHex: 'aec54845d5a1ada14b5bc78ad0b0097c6b6a2169d3afae3539756aabb60a697ebad154c10b608d71394137f30b6f8e3bc39692a7d6a71668e88e37a511e92dfe'
   },
   'did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM#z6LSjbVrHy1runX9TdsXEcW4m59eBgB7R7PUsDtRUmJkwUma': X25519KeyPair {
     passphrase: null,
@@ -479,8 +476,8 @@ console.log(didDocument.keys);
     controller: 'did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP',
     owner: undefined,
     type: 'Ed25519VerificationKey2018',
-    privateKeyBase58: 'kbqK5mNS3pok2nocwyQR82u3vp3PR54E9NHpoB73TUGcdAyzPTMmVG5cqm9yk5WjRHeiVh9hYNVx3xo649SWaE5',
-    publicKeyBase58: 'Fov7C7FSEPonJYfcFhDZ2hBory5DpBMaG3NLAbqnLbe1'
+    publicKeyBase58: 'Fov7C7FSEPonJYfcFhDZ2hBory5DpBMaG3NLAbqnLbe1',
+    privateKeyBase58: 'kbqK5mNS3pok2nocwyQR82u3vp3PR54E9NHpoB73TUGcdAyzPTMmVG5cqm9yk5WjRHeiVh9hYNVx3xo649SWaE5'
   },
   'did:key:z6MkuGB9nMVsZwJFR3WJwGBPsnjogYM5E4bvx4HFzsooFpRP#z6LScPHCyUbHkBcC7ABteDQzNJAMHs2GYM3ACpr5NAUKeSiE': X25519KeyPair {
     passphrase: null,
