@@ -51,7 +51,7 @@ We also need a DID with a BlsBbs key - in this case it is a Hedera DID;
 
 For the sake of this example, the issuer will also be the subject of the data credential.
 
-We also need a UUID for our Guardian - we will use an arbitrary value of `bd07af81-ea0e-4ef2-9846-d410a3cfcdf0` for this example.
+We also need a UUID for our Guardian - we will use an example value of `12345678-0000-0000-0000-123456789abc` for this example.
 
 Finally, we need at least one topic to use, or two if we want to use different topics for our data credential announcements and selective disclsoure request/response flows. You can create topics with `yarn mktopic` from the [hedera-did-register-ipfs-example](https://github.com/Meeco/hedera-did-register-ipfs-example) repository, or [write your own short script using the Hedera SDK](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic).
 
@@ -154,7 +154,7 @@ _*Note: base58 to hex conversion can be done [online here](https://appdevtools.c
   },
   "guardians": [
     {
-      "id": "bd07af81-ea0e-4ef2-9846-d410a3cfcdf0", // Our guardian UUID
+      "id": "12345678-0000-0000-0000-123456789abc", // Our guardian UUID
       "passphrase_encryption_key": "c59b4791957076a276b128877e1ad7e353ab65a10e9c368d26c9fea19e7e0ed459ec21397e8e44f5c108d30ac375505b", // Generated when we created our credential above
       "topic_ids": ["Z.Z.ZZZ"], // Use a topic you created - can be the same or different as above
       "issued_credentials": [
@@ -179,15 +179,16 @@ Once configured, we can start the responder; `yarn start`.
 
 ## Register a Data Credential
 
-We need to register the encrypted credential that we made with the guardian.
-To do this, we can run the responder script `yarn register` in a new terminal and fill in details as prompted from the steps we completed above:
+We need to register the [encrypted credential that was made earlier](#issuing-data-credential). This step would normally be done by the [Hedera Guardian](https://github.com/hashgraph/guardian) instance.
+
+To register the data credential, we can run the responder script `yarn register` in a new terminal and fill in details as prompted from the steps we completed above:
 
 ```
 ? Would you like to immediately register the credential (skip HCS message)? No
 ? ID/URN of the verifiable credential urn:uuid:688daba5-fbd4-4643-8f9e-eb11289f5cfb
 ? IPFS CID of the encrypted credential bafybeiaxu5au6fg63aifihinbigkqp5r66u7tqfomlgsz44sher4ubjlki/credential.json
 ? Encrypted passphrase Aes256Gcm.TX7OKlFpgW2Pvb6FaisLtHmDPBLEMt7EEpx9qWzj5EXd9W8f7sQV55_4m_Yw9gV1wbi-9P_rvSJzb7CAqvKthr2VR2f_tf5tT7YID3QkfWdoEXKY1hD25a3TZ8soO8yl.QUAAAAAFaXYADAAAAADebqcpqIH2XqWfxrAFYXQAEAAAAAD8TUEtifxmd4yaP161V7vyAmFkAAUAAABub25lAAA=.Pbkdf2Hmac.S0EAAAAFaXYAFAAAAABufNROtKnYY8PqCxjThVHOjrtfVxBpADpVAAAQbAAgAAAAAmhhc2gABwAAAFNIQTI1NgAA
-? Guardian ID (default is first configured guardian) bd07af81-ea0e-4ef2-9846-d410a3cfcdf0
+? Guardian ID (default is first configured guardian) 12345678-0000-0000-0000-123456789abc
 ? Topic ID for the message (default is the first topic for the selected guardian) Z.ZZ.ZZZ (YourTopic)
 ```
 
@@ -250,7 +251,7 @@ The key should show as "Verified" if entered correctly:
 
 ## Query for Responders
 
-Select "Next" to proceed to the VC Query section. Enter the IPFS CID of the public credential (in our test example, the CID is `bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`) and select "Get VC". 
+Select "Next" to proceed to the VC Query section. Enter the IPFS CID of the public credential (in our test example, the CID is [`bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json`](https://ipfs.io/ipfs/bafybeihx7w4tlwgtaiogi7axf2vlryeoapyjyjth6g7bdxpcm5sj2o2y54/disclosed-credential.json)) and select "Get VC". 
 
 This will show the ID of the VC being queried:
 
