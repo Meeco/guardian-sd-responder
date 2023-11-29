@@ -21,6 +21,7 @@ const {
   bbsBlsService,
   verifier,
   hcsEncryption,
+  logger,
 } = createServices(environment);
 
 const queryHandler = new PresentationQueryHandler(
@@ -43,15 +44,15 @@ const requestHandler = new PresentationRequestHandler(
   log
 );
 
-const registrationHandler = new RegisterCredentialHandler(registry, log);
+const registrationHandler = new RegisterCredentialHandler(registry, logger);
 
-new HcsListener(client, responderTopicsIds, log)
+new HcsListener(client, responderTopicsIds, logger)
   .addHandler(queryHandler)
   .addHandler(requestHandler)
   .listen();
 
 for (const guardian of guardians) {
-  new HcsListener(client, guardian.topic_ids, log)
+  new HcsListener(client, guardian.topic_ids, logger)
     .addHandler(registrationHandler)
     .listen();
 }
