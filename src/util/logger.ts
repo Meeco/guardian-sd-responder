@@ -7,20 +7,23 @@ const prettyJson = format.printf((info) => {
   return `${info.level}: ${info.message}`;
 });
 
-const logger = createLogger({
-  level: process.env.LOG_LEVEL ?? 'info',
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        prettyJson,
-        format.colorize(),
-        format.simple(),
-        format.splat(),
-        format.timestamp(),
-        format.errors({ stack: true })
-      ),
-    }),
-  ],
-});
+export const makeLogger = (level = 'info') =>
+  createLogger({
+    level,
+    transports: [
+      new transports.Console({
+        format: format.combine(
+          prettyJson,
+          format.colorize(),
+          format.simple(),
+          format.splat(),
+          format.timestamp(),
+          format.errors({ stack: true })
+        ),
+      }),
+    ],
+  });
 
-export const log = logger;
+const defaultLogger = makeLogger(process.env.LOG_LEVEL ?? 'info');
+
+export const log = defaultLogger;

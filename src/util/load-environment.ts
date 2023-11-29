@@ -19,11 +19,11 @@ import { PresentationVerifierDigitalBazaar } from '../vc/presentation-verifier-d
 import { EnvironmentConfig, HederaNetwork } from './config.js';
 import { fetchIPFSFile } from './ipfs-fetch.js';
 import { LmdbStorage } from './key-value-storage.js';
-import { log } from './logger.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { IpfsWriter } from '../ipfs/ipfs-writer.js';
+import { log, makeLogger } from './logger.js';
 
 // As we are using ESM we can't use vanilla __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -124,20 +124,21 @@ export const createServices = (configuration: EnvironmentConfig) => {
     payer_account_private_key
   );
 
-  const messenger = new HcsMessenger(client, log);
+  const logger = makeLogger(configuration.responder.log_level ?? 'info');
+  const messenger = new HcsMessenger(client, logger);
   const storage = new LmdbStorage();
   const reader = new HfsReader(client);
-  const documentLoader = new PexDocumentLoader(storage, log);
+  const documentLoader = new PexDocumentLoader(storage, logger);
   const responderKeyDetails = responderKey(configuration);
   const presentationSigner = new PresentationSigner(
     documentLoader.loader,
     responderKeyDetails,
-    log
+    logger
   );
   const bbsBlsService = new MattrBbsBlsService(
     documentLoader.loader,
     presentationSigner,
-    log
+    logger
   );
 
   const web3StorageToken = web3_storage_api_token;
@@ -148,13 +149,13 @@ export const createServices = (configuration: EnvironmentConfig) => {
     storage,
     fetchIPFSFile,
     configuration.guardians,
-    log
+    logger
   );
 
   const verifier = new PresentationVerifierDigitalBazaar(
     documentLoader.loader,
     configuration.guardians,
-    log
+    logger
   );
 
   let edsaKeyConfig:
@@ -210,7 +211,7 @@ export const createServices = (configuration: EnvironmentConfig) => {
   const hcsEncryption = new HcsEncryption(
     edsaKeyConfig,
     resolveDidDocument,
-    log
+    logger
   );
 
   return {
@@ -224,5 +225,6 @@ export const createServices = (configuration: EnvironmentConfig) => {
     client,
     verifier,
     hcsEncryption,
+    logger,
   };
 };
