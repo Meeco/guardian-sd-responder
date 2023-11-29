@@ -118,6 +118,7 @@ export class PresentationVerifierDigitalBazaar extends PresentationVerifier {
 
     if (!verificationKey?.type) {
       this.logger?.error('Could not resolve key data');
+      this.logger?.error(`Could not resolve key data for key with Id "${didKeyId}"`);
       this.logger?.verbose(didDoc);
       return false;
     }
